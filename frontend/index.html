@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Listado de tareas</title>
+
+    <!-- Hoja de estilos principal -->
+    <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+    <header class="encabezado">
+        <div class="logo">
+            <img src="taskflow.jpg" alt="TaskFlow">
+            <span class="logo-titulo">TaskFlow</span>
+        </div>
+        <div class="acciones-cabecera">
+            <button id="botonNuevaTarea" class="boton-agregar-tarea">
+                Nueva Tarea
+            </button>
+            <div class="buscador">
+                <input
+                    type="text"
+                    id="buscarTarea"
+                    placeholder="Buscar tarea..."
+                    aria-label="Buscar tarea"
+                >
+                <button id="botonBuscar">Buscar</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="contenedor">
+        <section class="panel-tareas">
+            <div class="titulo-panel">
+                <h1>Listado de tareas</h1>
+                <p>Consulta y busca las tareas registradas.</p>
+            </div>
+            <div id="listaTareas" class="lista-tareas"></div>
+
+            <p id="sinResultados" class="sin-resultados">
+                No se encontraron tareas.
+            </p>
+            
+            <button id="botonHistorial" class="boton-historial boton-ver-historial">Ver tareas completadas</button>
+            <button id="botonDeshacerHistorial" class="boton-historial boton-deshacer-historial">Deshacer ultima tarea completada</button>
+            <div id="paginacion" class="paginacion"></div>
+        </section>
+    </main>
+
+    <div id="ventanaTarea" class="ventana-fondo">
+        <div class="ventana-caja">
+            <h2>Nueva Tarea</h2>
+            <p>Ingresa los datos para registrar la tarea en el sistema.</p>
+
+            <form id="formularioTarea">
+                <div class="campo">
+                    <label for="inputDescripcion">Descripción de la tarea:</label>
+                    <input 
+                        type="text" 
+                        id="inputDescripcion" 
+                        placeholder="Ej. Revisar servidor de base de datos..." 
+                        required
+                    >
+                </div>
+
+                <div class="campo">
+                    <label for="inputResponsable">Responsable:</label>
+                    <input 
+                        type="text" 
+                        id="inputResponsable" 
+                        placeholder="Ej. Juan Pérez" 
+                        required
+                    >
+                </div>
+                
+                <div class="campo">
+                    <label for="inputResponsable">Prioridad:</label>
+                    <input 
+                        type="text" 
+                        id="inputPrioridad" 
+                        placeholder="Ej. 1" 
+                        required
+                    >
+                </div>
+
+                <div class="ventana-botones">
+                    <button type="button" id="botonCancelarVentana" class="boton-cancelar">Cancelar</button>
+                    <button type="submit" class="boton-guardar">Guardar Tarea</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript de la página -->
+    <script src="js/app.js"></script>
+</body>
+</html>
