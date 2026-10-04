@@ -3,58 +3,60 @@ import os
 
 RUTA_DB = os.path.join(os.path.dirname(__file__), "tareas.db")
 
-
+ESTADOS_TAREA = ["Pendiente", "Completada"]
+PRIORIDAD_TAREAS = {
+    "baja": 3,
+    "media": 2,
+    "alta": 1,
+}
 def conectar():
     return sqlite3.connect(RUTA_DB)
 
-
-def inicializar_bd():
+def crear_tabla():
+    """Crea la tabla si no existe y agrega responsable a instalaciones anteriores."""
     conexion = conectar()
     cursor = conexion.cursor()
 
     cursor.execute("""
+        DROP TABLE IF EXISTS tareas;
+
         CREATE TABLE IF NOT EXISTS tareas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            descripcion TEXT NOT NULL,
-            responsable TEXT NOT NULL DEFAULT '',
-            prioridad INTEGER NOT NULL DEFAULT 2,
-            complejidad INTEGER NOT NULL DEFAULT 1,
-            estado TEXT NOT NULL DEFAULT 'pendiente'
-        )
+            descripcion TEXT,
+            responsable TEXT,
+            prioridad INTEGER,
+            complejidad INTEGER,
+            estado TEXT,
+            estado_pasado TEXT,
+            nodo_anterior INTEGER,
+            nodo_siguiente INTEGER,
+        );
     """)
 
     cursor.execute("PRAGMA table_info(tareas)")
     columnas = [fila[1] for fila in cursor.fetchall()]
-    if "prioridad" not in columnas:
-        cursor.execute("ALTER TABLE tareas ADD COLUMN prioridad INTEGER NOT NULL DEFAULT 2")
-    if "complejidad" not in columnas:
-        cursor.execute("ALTER TABLE tareas ADD COLUMN complejidad INTEGER NOT NULL DEFAULT 1")
-    if "responsable" not in columnas:
-        cursor.execute("ALTER TABLE tareas ADD COLUMN responsable TEXT NOT NULL DEFAULT ''")
-    if "estado" not in columnas:
-        cursor.execute("ALTER TABLE tareas ADD COLUMN estado TEXT NOT NULL DEFAULT 'pendiente'")
 
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS solicitudes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            descripcion TEXT NOT NULL,
-            prioridad INTEGER NOT NULL DEFAULT 2,
-            estado TEXT NOT NULL DEFAULT 'Pendiente'
-        )
-    """)
+
+    cursor.execute(
+        """ALTER TABLE tareas ADD COLUMN estado_pasado TEXT DEFAULT ''
+        ALTER TABLE tareas ADD COLUMN nodo_anterior TEXT DEFAULT ''
+        ALTER TABLE tareas ADD COLUMN nodo_siguiente TEXT DEFAULT ''
+        """)
 
     conexion.commit()
     conexion.close()
 
-
-def guardar_tarea(descripcion, responsable="", prioridad=2, complejidad=1, estado="pendiente"):
+def guardar_tarea(descripcion, responsable="", prioridad=PRIORIDAD_TAREAS["baja"], complejidad=2, estado=ESTADOS_TAREA[0], estado_anterior="", nodo_anterior=0, nodo_siguiente=0):
+    """Inserta una tarea nueva en la base de datos."""
     conexion = conectar()
     cursor = conexion.cursor()
-    cursor.execute(
-        "INSERT INTO tareas (descripcion, responsable, prioridad, complejidad, estado) VALUES (?, ?, ?, ?, ?)",
-        (descripcion, responsable, prioridad, complejidad, estado)
+
+    cursor.execute("""
+        INSERT INTO tareas (descripcion, responsable, prioridad, complejidad, estado, estado_anterior, nodo_anterior, nodo_siguiente)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)""", 
+        (descripcion, responsable, prioridad, complejidad, estado, estado_anterior, nodo_anterior, nodo_siguiente)
     )
-    id_bd = cursor.lastrowid
+
     conexion.commit()
     conexion.close()
     return id_bd
@@ -63,8 +65,13 @@ def guardar_tarea(descripcion, responsable="", prioridad=2, complejidad=1, estad
 def obtener_tareas():
     conexion = conectar()
     cursor = conexion.cursor()
-    cursor.execute("SELECT id, descripcion, responsable, prioridad, complejidad, estado FROM tareas ORDER BY id")
-    datos = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT *
+        FROM tareas
+    """)
+
+    filas = cursor.fetchall()
     conexion.close()
     return datos
 
@@ -72,33 +79,45 @@ def obtener_tareas():
 def actualizar_estado_tarea(id_bd, estado):
     conexion = conectar()
     cursor = conexion.cursor()
-    cursor.execute("UPDATE tareas SET estado = ? WHERE id = ?", (estado, id_bd))
-    conexion.commit()
+
+    cursor.execute("""
+        SELECT *
+        FROM tareas
+        WHERE id = ?
+    """, (id))
+
+    tarea = cursor.fetchone()
     conexion.close()
 
 
-def eliminar_tarea(id_bd):
+def modificar_tarea(id, descripcion, responsable, prioridad, complejidad, estado, estado_anterior, nodo_anterior, nodo_siguiente):
+    """Modifica una tarea de la tabla tareas"""
     conexion = conectar()
     cursor = conexion.cursor()
-    cursor.execute("DELETE FROM tareas WHERE id = ?", (id_bd,))
-    conexion.commit()
-    conexion.close()
 
+    tarea = obtener_tarea(id)
+    estado_anterior = tarea[5]
+    if not descripcion: descripcion = tarea[1]
+    if not responsable: responsable = tarea[2]
+    if not prioridad: prioridad = tarea[3]
+    if not complejidad: complejidad = tarea[4]
+    if not estado: 
+        estado = tarea[5]
+        estado_anterior = ''
 
-def guardar_solicitud(descripcion, prioridad=2, estado="Pendiente"):
-    conexion = conectar()
-    cursor = conexion.cursor()
-    cursor.execute(
-        "INSERT INTO solicitudes (descripcion, prioridad, estado) VALUES (?, ?, ?)",
-        (descripcion, prioridad, estado)
-    )
-    id_solicitud = cursor.lastrowid
+    cursor.execute("""
+        UPDATE tareas
+        SET descripcion = ?, responsable = ?, prioridad = ?, complejidad = ?, estado = ?, estado_anterior = ?, nodo_anterior = ?, nodo_siguiente = ?
+        WHERE id = ?
+    """, (descripcion, prioridad, complejidad, estado, estado_anterior, nodo_anterior, nodo_siguiente, id))
+
     conexion.commit()
     conexion.close()
     return id_solicitud
 
 
-def obtener_solicitudes():
+def eliminar_tarea(id):
+    """Elimina una tarea de la tabla tareas"""
     conexion = conectar()
     cursor = conexion.cursor()
     cursor.execute("SELECT id, descripcion, prioridad, estado FROM solicitudes ORDER BY id")
@@ -106,6 +125,10 @@ def obtener_solicitudes():
     conexion.close()
     return datos
 
+    cursor.execute("""
+        DELETE FROM TAREAS
+        WHERE id = ?
+    """, (id))
 
 def actualizar_estado_solicitud(id_solicitud, estado):
     conexion = conectar()
