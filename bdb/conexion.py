@@ -27,6 +27,7 @@ def crear_tabla():
             descripcion TEXT,
             responsable TEXT,
             prioridad INTEGER,
+            complejidad INTEGER,
             estado TEXT,
             estado_pasado TEXT,
             nodo_anterior INTEGER,
@@ -49,15 +50,15 @@ def crear_tabla():
     conexion.commit()
     conexion.close()
 
-def guardar_tarea(descripcion, responsable="", prioridad=PRIORIDAD_TAREAS["baja"], estado=ESTADOS_TAREA[0], estado_anterior="", nodo_anterior=0, nodo_siguiente=0):
+def guardar_tarea(descripcion, responsable="", prioridad=PRIORIDAD_TAREAS["baja"], complejidad=2, estado=ESTADOS_TAREA[0], estado_anterior="", nodo_anterior=0, nodo_siguiente=0):
     """Inserta una tarea nueva en la base de datos."""
     conexion = conectar()
     cursor = conexion.cursor()
 
     cursor.execute("""
-        INSERT INTO tareas (descripcion, responsable, prioridad, estado, estado_anterior, nodo_anterior, nodo_siguiente)
-        VALUES (?, ?, ?, ?, ?, ?, ?)""", 
-        (descripcion, responsable, prioridad, estado, estado_anterior, nodo_anterior, nodo_siguiente)
+        INSERT INTO tareas (descripcion, responsable, prioridad, complejidad, estado, estado_anterior, nodo_anterior, nodo_siguiente)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)""", 
+        (descripcion, responsable, prioridad, complejidad, estado, estado_anterior, nodo_anterior, nodo_siguiente)
     )
 
     conexion.commit()
@@ -104,25 +105,26 @@ def obtener_tarea(id):
 
     return tarea
 
-def modificar_tarea(id, descripcion, responsable, prioridad, estado, estado_anterior, nodo_anterior, nodo_siguiente):
+def modificar_tarea(id, descripcion, responsable, prioridad, complejidad, estado, estado_anterior, nodo_anterior, nodo_siguiente):
     """Modifica una tarea de la tabla tareas"""
     conexion = conectar()
     cursor = conexion.cursor()
 
     tarea = obtener_tarea(id)
-    estado_anterior = tarea[4]
+    estado_anterior = tarea[5]
     if not descripcion: descripcion = tarea[1]
     if not responsable: responsable = tarea[2]
     if not prioridad: prioridad = tarea[3]
+    if not complejidad: complejidad = tarea[4]
     if not estado: 
-        estado = tarea[4]
+        estado = tarea[5]
         estado_anterior = ''
 
     cursor.execute("""
         UPDATE tareas
-        SET descripcion = ?, responsable = ?, prioridad = ?, estado = ?, estado_anterior = ?, nodo_anterior = ?, nodo_siguiente = ?
+        SET descripcion = ?, responsable = ?, prioridad = ?, complejidad = ?, estado = ?, estado_anterior = ?, nodo_anterior = ?, nodo_siguiente = ?
         WHERE id = ?
-    """, (descripcion, estado, prioridad, estado_anterior, nodo_anterior, nodo_siguiente, id))
+    """, (descripcion, prioridad, complejidad, estado, estado_anterior, nodo_anterior, nodo_siguiente, id))
 
     conexion.commit()
     conexion.close()
