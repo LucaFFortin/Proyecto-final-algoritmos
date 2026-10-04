@@ -1,5 +1,5 @@
 /* 
-   ESTILOS GENERALES
+   lo principal de la pagina 
    */
 
 * {
@@ -42,17 +42,17 @@ body {
 }
 
 .logo img {
-    height: 120px;
+    height: 140px;
     max-height: 100%;
     width: auto;
     display: block;
 }
 
 .logo-titulo {
-    font-size: 2rem;
+    font-size: 38px;
     font-weight: bold;
     color: #222222;
-    letter-spacing: 0.8px;
+    letter-spacing: 0.5px;
 }
 
 /* 
@@ -67,7 +67,6 @@ body {
 
 .buscador input {
     width: 100%;
-    min-width: 6rem;
     height: 48px;
 
     border: none;
@@ -91,76 +90,82 @@ body {
     color: white;
 
     cursor: pointer;
-    font-size: 15px; 
-    transition: all 0.3s;
-          
-    &:hover {
-        background-color: #222; /* Efecto al pasar el cursor por encima */
-    }
-
-    &:active {
-        scale: 0.98;
-    }
+    font-size: 15px;
 }
 
+.buscador button:hover {
+    background-color: #222;
+}
 
-/* Agrupa el botón y el buscador */
+/* Barra de acciones */
 .acciones-cabecera {
     display: flex;
     align-items: center;
-    gap: 15px; /* Espacio de separación entre el botón y el buscador */
-    width: 50%; /* O el ancho que prefieras */
+    gap: 10px;
+    width: 70%;
     justify-content: flex-end;
 }
 
-/* Estilo para que el botón se vea lindo y moderno */
-.boton-agregar-tarea {
-    background-color: #2b7a4b; /* Un verde oscuro elegante */
-    color: white;
-    border: none;
-    height: 48px;              /* Misma altura que el input del buscador */
-    padding: 0 18px;
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-    white-space: nowrap;       /* Evita que el texto se parta en dos renglones */
-    transition: all 0.3s;
-        
-    &:hover {
-        background-color: #22613b; /* Efecto al pasar el cursor por encima */
-    }
-
-    &:active {
-        scale: 0.98;
-    }
+.desplegable-ayuda {
+    position: relative;
 }
 
-.boton-historial {
-    background-color: #2b307a; /* Un verde oscuro elegante */
+.boton-mesa-ayuda {
+    height: 48px;
+    white-space: nowrap;
+    background-color: #2b7a4b;  
+    color: white;
+}
+
+.menu-desplegable {
+    display: none;
+    position: absolute;
+    top: 54px;
+    left: 0;
+    min-width: 190px;
+    background: #222;
+    padding: 8px;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.4);
+    z-index: 500;
+}
+
+.menu-desplegable.mostrar {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.menu-desplegable .boton-accion {
+    width: 100%;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.acciones-cabecera > .boton-accion {
+    height: 48px;
+    white-space: nowrap;
+}
+
+/* Botón para agregar tarea */
+.boton-agregar-tarea {
+    background-color: #2b7a4b; 
     color: white;
     border: none;
-    height: 48px;              /* Misma altura que el input del buscador */
+    height: 48px;              
     padding: 0 18px;
-    font-size: 0.8rem;
+    font-size: 15px;
     font-weight: bold;
     cursor: pointer;
-    white-space: nowrap;       /* Evita que el texto se parta en dos renglones */
-    transition: all 0.3s;
-    margin: 1em 1em 0 0;
-    border-radius: 0.4rem;
-    
-    &:hover {
-        background-color: #232261; /* Efecto al pasar el cursor por encima */
-    }
-
-    &:active {
-        scale: 0.98;
-    }
+    white-space: nowrap;       
+    transition: background-color 0.2s;
+}
+.boton-agregar-tarea:hover {
+    background-color: #22613b; 
 }
 
 
 /* 
-   CONTENEDOR PRINCIPAL
+   CONTENEDOR PRINCIPAL 
     */
 
 .contenedor {
@@ -172,7 +177,7 @@ body {
 
 
 /* 
-   Es la zona grande de la maqueta donde aparecen las tareas.
+   Es la parte donde aparecen las tareas.
    */
 
 .panel-tareas {
@@ -208,11 +213,13 @@ body {
 
 .lista-tareas {
     display: flex;
-    flex-direction: column;
+    flex-direction: column; 
     gap: 12px;
 }
 
-
+/* 
+   Se apilan verticalmente
+    */
 
 .tarea {
     background-color: #333;
@@ -230,7 +237,6 @@ body {
 .tarea:hover {
     background-color: #3d3d3d;
 }
-
 
 /* Información de la tarea */
 
@@ -257,7 +263,6 @@ body {
 
     white-space: nowrap;
 }
-
 
 /* Diferentes estados */
 
@@ -325,37 +330,34 @@ body {
     border-color: white;
 }
 
-/* 
-   ventana para agregar tarea
-    */
 
 
 
-/* 1. Fondo oscuro que tapa toda la pantalla */
+/* Fondo oscuro que tapa toda la pantalla */
 .ventana-fondo {
-    display: none; /* Empieza oculto */
+    display: none; 
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.75); /* Oscurece todo lo de atrás */
-    z-index: 1000; /* Asegura que quede por encima de todo */
+    background-color: rgba(0, 0, 0, 0.75);
+    z-index: 1000; 
 
-    /* Centra la cajita exactamente en el medio */
+    
     align-items: center;
     justify-content: center;
 }
 
-/* 2. El recuadro del modal */
+/* El recuadro del ventana */
 .ventana-caja {
-    background-color: #222222; /* El mismo fondo oscuro del panel */
+    background-color: #222222; 
     width: 90%;
     max-width: 500px;
     padding: 30px;
     border-radius: 6px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
-    border-top: 4px solid #2b7a4b; /* Detalle verde acorde al botón */
+    border-top: 4px solid #2b7a4b; 
 }
 
 .ventana-caja h2 {
@@ -386,7 +388,7 @@ body {
 
 .campo input {
     height: 44px;
-    background-color: #c6c6c6; /* Mismo color de fondo que tu buscador */
+    background-color: #c6c6c6; /* el colo que aparece en la busqueda */
     border: none;
     padding: 0 14px;
     font-size: 15px;
@@ -397,7 +399,7 @@ body {
     background-color: #ffffff;
 }
 
-/* Botones del modal */
+/* Botones del ventana */
 .ventana-botones {
     display: flex;
     justify-content: flex-end;
@@ -431,4 +433,83 @@ body {
 .boton-guardar:hover {
     background-color: #22613b;
 }
+
+
+/* Acciones del sistema */
+.botones-panel {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;         /* Espacio entre cada boton  */
+    margin-bottom: 18px;
+}
+
+.boton-accion,
+.boton-completar,
+.boton-eliminar {
+    border: none;
+    padding: 10px 14px;
+    cursor: pointer;
+    font-weight: bold;
+}
+/* Botón genérico de acción (Mesa de ayuda, Complejidad, Deshacer, etc.) color que le puse */
+.boton-accion {
+    background: #2b7a4b;
+    color: white;
+}
+
+.boton-accion:hover { background: #555; }
+
+.tarea-acciones {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.boton-completar { background: #2b7a4b; color: white; }
+.boton-eliminar { background: #8a3c3c; color: white; }
+.boton-completar:hover { background: #22613b; }
+.boton-eliminar:hover { background: #a54a4a; }
+/* 
+   Usado dentro de la ventana de Nueva Tarea
+   para poner Prioridad y Complejidad derechito
+    */
+
+.fila-campos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.campo select {
+    height: 44px;
+    background: #c6c6c6;
+    border: none;
+    padding: 0 14px;
+    font-size: 15px;
+}
+
+.ventana-fondo {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.ventana-caja {
+    background: #222;
+    width: 90%;
+    max-width: 520px;
+    padding: 30px;
+    border-radius: 6px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+    border-top: 4px solid #2b7a4b;
+}
+/* Título y párrafo dentro de la ventana nueva tarea*/
+.ventana-caja h2 { color: white; margin-bottom: 8px; }
+.ventana-caja p { color: #bdbdbd; margin-bottom: 22px; }
 
