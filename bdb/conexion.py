@@ -4,11 +4,15 @@ import os
 # Esto asegura que tareas.db se cree siempre al lado de este archivo conexion.py
 RUTA_BD = os.path.join(os.path.dirname(__file__), "tareas.db")
 
-
+ESTADOS_TAREA = ["Pendiente", "Completada"]
+PRIORIDAD_TAREAS = {
+    "baja": 3,
+    "media": 2,
+    "alta": 1,
+}
 def conectar():
     """Crea y devuelve la conexión con la base de datos."""
     return sqlite3.connect(RUTA_BD)
-
 
 def crear_tabla():
     """Crea la tabla si no existe y agrega responsable a instalaciones anteriores."""
@@ -16,24 +20,18 @@ def crear_tabla():
     cursor = conexion.cursor()
 
     cursor.execute("""
+        DROP TABLE IF EXISTS tareas;
+
         CREATE TABLE IF NOT EXISTS tareas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             descripcion TEXT,
             responsable TEXT,
-            estado TEXT
-        )
-    """)
-        
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS tareas_completadas (
-            id TEXT PRIMARY KEY,
-            descripcion TEXT,
-            responsable TEXT,
-            estado TEXT
+            prioridad INTEGER,
+            estado TEXT,
             estado_pasado TEXT,
-            nodo_anterior TEXT,
-            nodo_siguiente TEXT,
-        )
+            nodo_anterior INTEGER,
+            nodo_siguiente INTEGER,
+        );
     """)
 
     # Si la base ya existía con la estructura anterior, agregamos
@@ -41,24 +39,26 @@ def crear_tabla():
     cursor.execute("PRAGMA table_info(tareas)")
     columnas = [fila[1] for fila in cursor.fetchall()]
 
-    if "responsable" not in columnas:
-        cursor.execute(
-            "ALTER TABLE tareas ADD COLUMN responsable TEXT DEFAULT ''"
-        )
+
+    cursor.execute(
+        """ALTER TABLE tareas ADD COLUMN estado_pasado TEXT DEFAULT ''
+        ALTER TABLE tareas ADD COLUMN nodo_anterior TEXT DEFAULT ''
+        ALTER TABLE tareas ADD COLUMN nodo_siguiente TEXT DEFAULT ''
+        """)
 
     conexion.commit()
     conexion.close()
 
-
-def guardar_tarea(descripcion, responsable="", estado="Pendiente"):
+def guardar_tarea(descripcion, responsable="", prioridad=PRIORIDAD_TAREAS["baja"], estado=ESTADOS_TAREA[0], estado_anterior="", nodo_anterior=0, nodo_siguiente=0):
     """Inserta una tarea nueva en la base de datos."""
     conexion = conectar()
     cursor = conexion.cursor()
 
     cursor.execute("""
-        INSERT INTO tareas (descripcion, responsable, estado)
-        VALUES (?, ?, ?)
-    """, (descripcion, responsable, estado))
+        INSERT INTO tareas (descripcion, responsable, prioridad, estado, estado_anterior, nodo_anterior, nodo_siguiente)
+        VALUES (?, ?, ?, ?, ?, ?, ?)""", 
+        (descripcion, responsable, prioridad, estado, estado_anterior, nodo_anterior, nodo_siguiente)
+    )
 
     conexion.commit()
     conexion.close()
@@ -69,7 +69,7 @@ def obtener_tareas():
     cursor = conexion.cursor()
 
     cursor.execute("""
-        SELECT id, descripcion, responsable, estado
+        SELECT *
         FROM tareas
     """)
 
@@ -94,7 +94,7 @@ def obtener_tarea(id):
     cursor = conexion.cursor()
 
     cursor.execute("""
-        SELECT id, descripcion, responsable, estado
+        SELECT *
         FROM tareas
         WHERE id = ?
     """, (id))
@@ -104,52 +104,38 @@ def obtener_tarea(id):
 
     return tarea
 
-def obtener_tarea_completada(id):
-    """Devuelve una tarea completada guardada en la base de datos."""
-    conexion = conectar()
-    cursor = conexion.cursor()
-
-    cursor.execute("""
-        SELECT *
-        FROM tareas_completadas
-        WHERE id = ?
-    """, (id))
-
-    tarea = cursor.fetchone()
-    conexion.close()
-
-    return tarea
-
-def completar_tarea(id, estado_anterior, nodo_anterior, nodo_siguiente):
-    """Guarda una tarea en la tabla tareas_completadas."""
+def modificar_tarea(id, descripcion, responsable, prioridad, estado, estado_anterior, nodo_anterior, nodo_siguiente):
+    """Modifica una tarea de la tabla tareas"""
     conexion = conectar()
     cursor = conexion.cursor()
 
     tarea = obtener_tarea(id)
+    estado_anterior = tarea[4]
+    if not descripcion: descripcion = tarea[1]
+    if not responsable: responsable = tarea[2]
+    if not prioridad: prioridad = tarea[3]
+    if not estado: 
+        estado = tarea[4]
+        estado_anterior = ''
 
     cursor.execute("""
-        INSERT INTO tareas_completadas (id, descripcion, responsable, estado, estado_anterior, nodo_anterior, nodo_siguiente)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, tarea[0], tarea[1], tarea[2], tarea[3], estado_anterior, nodo_anterior, nodo_siguiente)
-
-    # TODO:
-    # habria que eliminar de la tabla tareas la tarea completada
-    # o, fucionar las tablas y en tareas agregar los campos faltantes
+        UPDATE tareas
+        SET descripcion = ?, responsable = ?, prioridad = ?, estado = ?, estado_anterior = ?, nodo_anterior = ?, nodo_siguiente = ?
+        WHERE id = ?
+    """, (descripcion, estado, prioridad, estado_anterior, nodo_anterior, nodo_siguiente, id))
 
     conexion.commit()
     conexion.close()
 
-def deshacer_tarea_completada(id, estado_anterior, nodo_anterior, nodo_siguiente):
-    """Deshace la ultima tarea guardada."""
+def eliminar_tarea(id):
+    """Elimina una tarea de la tabla tareas"""
     conexion = conectar()
     cursor = conexion.cursor()
 
-    tarea = obtener_tarea_completada(id)
-
     cursor.execute("""
-        INSERT INTO tareas_completadas (id, descripcion, responsable, estado, estado_anterior, nodo_anterior, nodo_siguiente)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, tarea[0], tarea[1], tarea[2], tarea[3], estado_anterior, nodo_anterior, nodo_siguiente)
+        DELETE FROM TAREAS
+        WHERE id = ?
+    """, (id))
 
     conexion.commit()
     conexion.close()
