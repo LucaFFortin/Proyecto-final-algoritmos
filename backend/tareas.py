@@ -3,8 +3,12 @@ from tda_pila import Pila, apilar, desapilar, pila_vacia, en_cima, tamanio, barr
 from tda_colas import Cola, arribo, atencion, cola_vacia, en_frente, tamanio, mover_al_final
 from tad_lista import Lista, insertar, lista_vacia, eliminar, tamanio, buscar, insertar_por_prioridad 
 
+
 # GET = el cliente solo quiere leer datos del servidor, no quiere modificar nada.
 # POST = el cliente quiere enviar datos al servidor, quiere modificar algo en el servidor.
+
+
+
 
 """
 Recibir la nueva tarea.
@@ -63,8 +67,6 @@ tareas = {
 }
 
 lista_tareas = Lista()
-tareas_completadas = Pila()
-solicitudes_soporte = Cola()
 
 for tarea, info in tareas.items():
 
@@ -74,10 +76,6 @@ for tarea, info in tareas.items():
         "prioridad": info["prioridad"],
         "estado": info["estado"]
     }
-
-    if (info["estado"] == "completada"):
-        apilar(tareas_completadas, dato)
-    
 
     insertar_por_prioridad(lista_tareas, dato)
 

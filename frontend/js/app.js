@@ -1,179 +1,20 @@
-/*
-    LISTADO DE TAREAS
-    Este archivo se encarga de:
-    Mostrar las tareas.
-    Buscar tareas.
-    Dividir las tareas en páginas.
-    Crear los botones de paginación.
-
-    
-*/
-
-
-// CONFIGURACIÓN DE LA PAGINACIÓN
 let tareas = [];
+let tareasFiltradas = [];
 
-const tareasPorPagina = 5;
 
+// paginación
 let paginaActual = 1;
+const tareasPorPagina = 5; // Número de tareas a mostrar por página
 
-// ELEMENTOS DEL HTML
+
+
+// llama a cada class o id del html para poder manipularlos desde el js
 const listaTareas = document.getElementById("listaTareas");
 const paginacion = document.getElementById("paginacion");
 const sinResultados = document.getElementById("sinResultados");
-
 const inputBuscar = document.getElementById("buscarTarea");
 const botonBuscar = document.getElementById("botonBuscar");
 
-
-// Esta variable contiene las tareas que se están mostrando.
-// Al principio contiene todas las tareas.
-let tareasFiltradas = tareas;
-
-// MOSTRAR TAREAS
-function mostrarTareas() {
-    // Limpiamos el contenido anterior.
-    listaTareas.innerHTML = "";
-
-    // Calculamos desde qué posición y hasta qué posición
-    // debemos mostrar las tareas de la página actual.
-    const inicio = (paginaActual - 1) * tareasPorPagina;
-    const fin = inicio + tareasPorPagina;
-
-    const tareasDeLaPagina = tareasFiltradas.slice(inicio, fin);
-
-
-    // Si no encontramos tareas mostramos un mensaje.
-    if (tareasDeLaPagina.length === 0) {
-
-        sinResultados.style.display = "block";
-
-        return;
-    }
-
-    sinResultados.style.display = "none";
-
-
-    // Recorremos las tareas que corresponden a esta página.
-    tareasDeLaPagina.forEach(function(tarea) {
-
-        const elemento = document.createElement("article");
-
-        elemento.classList.add("tarea");
-
-
-        // Convertimos el estado a una clase CSS.
-        const claseEstado = obtenerClaseEstado(tarea.estado);
-
-
-        elemento.innerHTML = `
-            <div class="tarea-info">
-                <h2>${tarea.titulo}</h2>
-                <p><strong>ID:</strong> ${tarea.id} &nbsp;|&nbsp; <strong>Prioridad:</strong> ${tarea.prioridad} &nbsp;|&nbsp; <strong>Responsable:</strong> ${tarea.responsable || "Sin asignar"}</p>
-            </div>
-
-            <span class="estado ${claseEstado}">
-                ${tarea.estado}
-            </span>
-        `;
-
-
-        listaTareas.appendChild(elemento);
-    });
-}
-
-// OBTENER CLASE DEL ESTADO
-function obtenerClaseEstado(estado) {
-    if (!estado) return "pendiente";
-    const est = estado.toString().toLowerCase();
-    if (est === "pendiente") return "pendiente";
-    if (est === "en proceso" || est === "en progreso") return "en-proceso";
-    if (est === "completada") return "completada";
-    return "pendiente";
-}
-
-// CREAR PAGINACIÓN
-function crearPaginacion() {
-
-    paginacion.innerHTML = "";
-
-    const cantidadPaginas = Math.ceil(
-        tareasFiltradas.length / tareasPorPagina
-    );
-
-
-    // Si hay una sola página no hace falta mostrar botones.
-    if (cantidadPaginas <= 1) {
-        return;
-    }
-
-
-    // Creamos un botón por cada página.
-    for (let numero = 1; numero <= cantidadPaginas; numero++) {
-
-        const boton = document.createElement("button");
-
-        boton.classList.add("boton-pagina");
-
-        boton.textContent = numero;
-
-
-        // Marcamos la página actual.
-        if (numero === paginaActual) {
-            boton.classList.add("activa");
-        }
-
-
-        // Cuando hacemos clic cambiamos de página.
-        boton.addEventListener("click", function() {
-
-            paginaActual = numero;
-
-            mostrarTareas();
-            crearPaginacion();
-        });
-
-
-        paginacion.appendChild(boton);
-    }
-}
-
-// BUSCAR TAREAS
-function buscarTareas() {
-
-    const texto = inputBuscar.value
-        .trim()
-        .toLowerCase();
-
-
-    // Si el buscador está vacío mostramos todas las tareas.
-    if (texto === "") {
-
-        tareasFiltradas = tareas;
-
-    } else {
-
-        // filter() devuelve solamente las tareas que coinciden
-        // con el texto escrito por el usuario.
-        tareasFiltradas = tareas.filter(function(tarea) {
-            const titulo = (tarea.titulo || "").toLowerCase();
-            const id = (tarea.id || "").toLowerCase();
-            const estado = (tarea.estado || "").toLowerCase();
-            const responsable = (tarea.responsable || "").toLowerCase();
-            return titulo.includes(texto) || id.includes(texto) ||
-                   estado.includes(texto) || responsable.includes(texto);
-        });
-    }
-
-
-    // Volvemos a la primera página después de buscar.
-    paginaActual = 1;
-
-    mostrarTareas();
-    crearPaginacion();
-}
-
-// CONTROL DE LA VENTANA PARA NUEVA TAREA
 const ventanaTarea = document.getElementById("ventanaTarea");
 const botonNuevaTarea = document.getElementById("botonNuevaTarea");
 const botonCancelarVentana = document.getElementById("botonCancelarVentana");
@@ -181,130 +22,285 @@ const formularioTarea = document.getElementById("formularioTarea");
 const inputDescripcion = document.getElementById("inputDescripcion");
 const inputResponsable = document.getElementById("inputResponsable");
 const inputPrioridad = document.getElementById("inputPrioridad");
-const botonVerHistorial = document.getElementById("botonHistorial");
+const inputComplejidad = document.getElementById("inputComplejidad");
 
-// Abrir la ventana cuando hacen clic en "Nueva Tarea".
-botonNuevaTarea.addEventListener("click", function() {
-    ventanaTarea.style.display = "flex";
-    inputDescripcion.focus();
-});
+const ventanaSolicitud = document.getElementById("ventanaSolicitud");
+const formularioSolicitud = document.getElementById("formularioSolicitud");
+const inputSolicitud = document.getElementById("inputSolicitud");
+const inputPrioridadSolicitud = document.getElementById("inputPrioridadSolicitud");
+const botonMesaAyuda = document.getElementById("botonMesaAyuda");
+const menuMesaAyuda = document.getElementById("menuMesaAyuda");
 
-botonVerHistorial.addEventListener("click", function() {
-});
+function obtenerTextoPrioridad(prioridad) {
+    if (Number(prioridad) === 1) return "Alta";
+    if (Number(prioridad) === 3) return "Baja";
+    return "Media";
+}
 
-// Cerrar la ventana cuando hacen clic en "Cancelar".
-botonCancelarVentana.addEventListener("click", function() {
-    formularioTarea.reset();
-    ventanaTarea.style.display = "none";
-});
+function obtenerClaseEstado(estado) {
+    const est = (estado || "pendiente").toString().toLowerCase();
+    if (est === "completada") return "completada";
+    if (est === "en progreso" || est === "en proceso") return "en-proceso";
+    return "pendiente";
+}
 
-// Cerrar la ventana si hacen clic en la parte oscura de afuera.
-ventanaTarea.addEventListener("click", function(evento) {
-    if (evento.target === ventanaTarea) {
-        formularioTarea.reset();
-        ventanaTarea.style.display = "none";
+// solo para que muestre las tareas en la página actual python se va encargando de traer las tareas desde la base de datos
+function mostrarTareas() {
+    listaTareas.innerHTML = "";
+    const inicio = (paginaActual - 1) * tareasPorPagina;
+    const tareasDeLaPagina = tareasFiltradas.slice(inicio, inicio + tareasPorPagina);
+
+    if (tareasDeLaPagina.length === 0) {
+        sinResultados.style.display = "block";
+        return;
     }
-});
+    sinResultados.style.display = "none";
 
-// También permite cerrar la ventana con Escape.
-document.addEventListener("keydown", function(evento) {
-    if (evento.key === "Escape" && ventanaTarea.style.display === "flex") {
-        formularioTarea.reset();
-        ventanaTarea.style.display = "none";
+    tareasDeLaPagina.forEach(tarea => {
+        const elemento = document.createElement("article");
+        elemento.classList.add("tarea");
+        elemento.innerHTML = `
+            <div class="tarea-info">
+                <h2>${tarea.titulo}</h2>
+                <p><strong>ID:</strong> ${tarea.id} | <strong>Prioridad:</strong> ${obtenerTextoPrioridad(tarea.prioridad)} | <strong>Complejidad:</strong> ${tarea.complejidad} | <strong>Responsable:</strong> ${tarea.responsable || "Sin asignar"}</p>
+            </div>
+            <div class="tarea-acciones">
+                <span class="estado ${obtenerClaseEstado(tarea.estado)}">${tarea.estado}</span>
+                <button class="boton-completar" data-id="${tarea.id}">Completar</button>
+                <button class="boton-eliminar" data-id="${tarea.id}">Eliminar</button>
+            </div>
+        `;
+        listaTareas.appendChild(elemento);
+    });
+
+    document.querySelectorAll(".boton-completar").forEach(boton => {
+        boton.addEventListener("click", () => completarTarea(boton.dataset.id));
+    });
+    document.querySelectorAll(".boton-eliminar").forEach(boton => {
+        boton.addEventListener("click", () => eliminarTarea(boton.dataset.id));
+    });
+}
+
+// crea la paginación según la cantidad de tareas filtradas
+
+function crearPaginacion() {
+    paginacion.innerHTML = "";
+    const cantidadPaginas = Math.ceil(tareasFiltradas.length / tareasPorPagina);
+    if (cantidadPaginas <= 1) return;
+
+    for (let numero = 1; numero <= cantidadPaginas; numero++) {
+        const boton = document.createElement("button");
+        boton.className = "boton-pagina" + (numero === paginaActual ? " activa" : "");
+        boton.textContent = numero;
+        boton.addEventListener("click", () => {
+            paginaActual = numero;
+            mostrarTareas();
+            crearPaginacion();
+        });
+        paginacion.appendChild(boton);
     }
-});
+}
 
+// busca las tareas según el texto ingresado en el input de búsqueda y actualiza la lista de tareas mostradas
+function buscarTareas() {
+    const texto = inputBuscar.value.trim().toLowerCase();
+    tareasFiltradas = texto === "" ? tareas : tareas.filter(tarea =>
+        (tarea.titulo || "").toLowerCase().includes(texto) ||
+        (tarea.id || "").toLowerCase().includes(texto) ||
+        (tarea.estado || "").toLowerCase().includes(texto) ||
+        (tarea.responsable || "").toLowerCase().includes(texto)
+    );
+    paginaActual = 1;
+    mostrarTareas();
+    crearPaginacion();
+}
 
-// COMUNICACIÓN CON PYTHON (FETCH)
+// carga las tareas desde el servidor y actualiza la lista de tareas mostradas
 
-// Función para pedirle las tareas a Python (GET).
 function cargarTareasDesdeServidor() {
     fetch("http://localhost:8000/api/tareas")
-        .then(respuesta => {
-            if (!respuesta.ok) {
-                throw new Error("No se pudieron cargar las tareas.");
-            }
-            return respuesta.json();
-        })
-        .then(datosDesdePython => {
-            console.log("Tareas recibidas de Python:", datosDesdePython);
-
-            // Adaptamos el formato de Python para tu función mostrarTareas.
-            tareas = datosDesdePython.map(t => ({
+        .then(respuesta => respuesta.json())
+        .then(datos => {
+            tareas = datos.map(t => ({
                 id: t.id_tarea,
                 titulo: t.descripcion,
                 responsable: t.responsable || "",
                 prioridad: t.prioridad || 2,
+                complejidad: t.complejidad || 1,
                 estado: t.estado || "Pendiente"
             }));
-
             tareasFiltradas = tareas;
             paginaActual = 1;
             mostrarTareas();
             crearPaginacion();
         })
-        .catch(error => {
-            console.warn("Servidor Python desconectado:", error);
-        });
+        .catch(() => console.warn("Servidor Python desconectado."));
 }
 
-// Evento al enviar el formulario (POST).
-formularioTarea.addEventListener("submit", function(evento) {
-    evento.preventDefault();
-
-    const descripcion = inputDescripcion.value.trim();
-    const responsable = inputResponsable.value.trim();
-    const prioridad = inputPrioridad.value.trim();
-
-    if (descripcion === "" || responsable === "" || prioridad === "") {
-        return;
-    }
-
-    // Enviamos la tarea a Python.
-    fetch("http://localhost:8000/api/tareas", {
+// envía una solicitud al servidor para completar una tarea y recarga la lista de tareas
+function completarTarea(id) {
+    fetch("http://localhost:8000/api/tareas/completar", {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            descripcion: descripcion,
-            responsable: responsable,
-            prioridad: prioridad
-        })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id })
     })
-    .then(respuesta => {
-        if (!respuesta.ok) {
-            return respuesta.json().then(datos => {
-                throw new Error(datos.mensaje || "No se pudo guardar la tarea.");
-            });
-        }
-
-        return respuesta.json();
-    })
+    .then(r => r.json())
     .then(datos => {
-        console.log("Respuesta de Python:", datos.mensaje);
-
-        // Limpiamos los campos y cerramos la ventana.
-        formularioTarea.reset();
-        ventanaTarea.style.display = "none";
-
-        // Volvemos a traer la lista actualizada desde Python.
+        if (!datos.mensaje) throw new Error();
         cargarTareasDesdeServidor();
     })
-    .catch(error => {
-        console.error("Error al guardar en Python:", error);
-        alert("No se pudo guardar la tarea. Verificá que el servidor Python esté iniciado.");
-    });
+    .catch(() => alert("No se pudo completar la tarea."));
+}
+
+// envía una solicitud al servidor para eliminar una tarea y recarga la lista de tareas
+function eliminarTarea(id) {
+    if (!confirm("¿Eliminar esta tarea?")) return;
+    fetch(`http://localhost:8000/api/tareas?id=${encodeURIComponent(id)}`, { method: "DELETE" })
+        .then(r => r.json())
+        .then(() => cargarTareasDesdeServidor())
+        .catch(() => alert("No se pudo eliminar la tarea."));
+}
+
+botonNuevaTarea.addEventListener("click", () => {
+    ventanaTarea.style.display = "flex";
+    inputDescripcion.focus();
 });
 
-// INICIO DE LA APLICACIÓN
+botonCancelarVentana.addEventListener("click", () => {
+    formularioTarea.reset();
+    ventanaTarea.style.display = "none";
+});
 
-// Buscar al presionar el botón o presionar Enter
-botonBuscar.addEventListener("click", buscarTareas);
-inputBuscar.addEventListener("keydown", function(event) {
-    if (event.key === "Enter") {
-        buscarTareas();
+ventanaTarea.addEventListener("click", evento => {
+    if (evento.target === ventanaTarea) ventanaTarea.style.display = "none";
+});
+
+// envía una solicitud al servidor para crear una nueva tarea y recarga la lista de tareas
+formularioTarea.addEventListener("submit", evento => {
+    evento.preventDefault();
+    fetch("http://localhost:8000/api/tareas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            descripcion: inputDescripcion.value.trim(),
+            responsable: inputResponsable.value.trim(),
+            prioridad: Number(inputPrioridad.value),
+            complejidad: Number(inputComplejidad.value)
+        })
+    })
+    .then(r => r.json().then(datos => ({ ok: r.ok, datos })))
+    .then(({ ok, datos }) => {
+        if (!ok) throw new Error(datos.mensaje);
+        formularioTarea.reset();
+        ventanaTarea.style.display = "none";
+        cargarTareasDesdeServidor();
+    })
+    .catch(error => alert(error.message || "No se pudo guardar la tarea."));
+});
+
+// envía una solicitud al servidor para deshacer la última acción y recarga la lista de tareas
+document.getElementById("botonDeshacer").addEventListener("click", () => {
+    fetch("http://localhost:8000/api/tareas/deshacer", { method: "POST" })
+        .then(r => r.json().then(datos => ({ ok: r.ok, datos })))
+        .then(({ ok, datos }) => {
+            if (!ok) throw new Error(datos.mensaje);
+            cargarTareasDesdeServidor();
+        })
+        .catch(error => alert(error.message));
+});
+
+botonMesaAyuda.addEventListener("click", evento => {
+    evento.stopPropagation();
+    menuMesaAyuda.classList.toggle("mostrar");
+});
+
+document.addEventListener("click", evento => {
+    if (!evento.target.closest(".desplegable-ayuda")) {
+        menuMesaAyuda.classList.remove("mostrar");
     }
 });
-// Al cargar la página, traemos las tareas directamente de Python
+
+document.getElementById("botonNuevaSolicitud").addEventListener("click", () => {
+    menuMesaAyuda.classList.remove("mostrar");
+    ventanaSolicitud.style.display = "flex";
+    inputSolicitud.focus();
+});
+
+document.getElementById("botonCancelarSolicitud").addEventListener("click", () => {
+    formularioSolicitud.reset();
+    ventanaSolicitud.style.display = "none";
+});
+
+ventanaSolicitud.addEventListener("click", evento => {
+    if (evento.target === ventanaSolicitud) ventanaSolicitud.style.display = "none";
+});
+// envía una solicitud al servidor para crear una nueva solicitud y recarga la lista de solicitudes
+formularioSolicitud.addEventListener("submit", evento => {
+    evento.preventDefault();
+    fetch("http://localhost:8000/api/solicitudes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            descripcion: inputSolicitud.value.trim(),
+            prioridad: Number(inputPrioridadSolicitud.value)
+        })
+    })
+    .then(r => r.json().then(datos => ({ ok: r.ok, datos })))
+    .then(({ ok, datos }) => {
+        if (!ok) throw new Error(datos.mensaje);
+        formularioSolicitud.reset();
+        ventanaSolicitud.style.display = "none";
+        cargarSolicitudes();
+    })
+    .catch(error => alert(error.message || "No se pudo registrar la solicitud."));
+});
+// envía una solicitud al servidor para atender la solicitud más antigua y recarga la lista de solicitudes
+document.getElementById("botonAtenderSolicitud").addEventListener("click", () => {
+    menuMesaAyuda.classList.remove("mostrar");
+    fetch("http://localhost:8000/api/solicitudes/atender", { method: "POST" })
+        .then(r => r.json().then(datos => ({ ok: r.ok, datos })))
+        .then(({ ok, datos }) => {
+            if (!ok) throw new Error(datos.mensaje);
+            alert("Solicitud atendida: " + datos.descripcion);
+            cargarSolicitudes();
+        })
+        .catch(error => alert(error.message));
+});
+// carga las solicitudes desde el servidor y actualiza la lista de solicitudes mostradas =)
+function cargarSolicitudes() {
+    fetch("http://localhost:8000/api/solicitudes")
+        .then(r => r.json())
+        .then(solicitudes => {
+            const contenedor = document.getElementById("listaSolicitudes");
+            contenedor.innerHTML = solicitudes.length ? solicitudes.map(s =>
+                `<div class="item-extra"><strong>Solicitud ${s.id_solicitud}</strong> - ${s.descripcion} <span>${s.estado}</span></div>`
+            ).join("") : "<p>No hay solicitudes pendientes.</p>";
+        });
+}
+// carga la complejidad de las tareas desde el servidor y actualiza la lista de complejidad mostradas
+document.getElementById("botonComplejidad").addEventListener("click", () => {
+    fetch("http://localhost:8000/api/complejidad")
+        .then(r => r.json())
+        .then(lista => {
+            const contenedor = document.getElementById("listaComplejidad");
+            contenedor.innerHTML = lista.length ? lista.map(t =>
+                `<div class="item-extra"><strong>${t.id_tarea}</strong> - ${t.descripcion} <span>Complejidad: ${t.complejidad}</span></div>`
+            ).join("") : "<p>No hay tareas para mostrar.</p>";
+        });
+});
+
+botonBuscar.addEventListener("click", buscarTareas);
+inputBuscar.addEventListener("keydown", evento => {
+    if (evento.key === "Enter") buscarTareas();
+});
+
+document.addEventListener("keydown", evento => {
+    if (evento.key === "Escape") {
+        ventanaTarea.style.display = "none";
+        ventanaSolicitud.style.display = "none";
+        menuMesaAyuda.classList.remove("mostrar");
+    }
+});
+// carga las tareas y solicitudes desde el servidor al iniciar la aplicación
 cargarTareasDesdeServidor();
+cargarSolicitudes();
