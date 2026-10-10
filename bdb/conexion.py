@@ -61,6 +61,8 @@ def obtener_tareas(): # Recupera todas las tareas guardadas.Lista de tareas
     filas = cursor.fetchall()
 
     conexion.close()
+    return id_bd
+
 
     return filas
 
@@ -76,6 +78,7 @@ def obtener_tarea(id): # Busca una tarea por su ID.Lista de tareas
     tarea = cursor.fetchone()
 
     conexion.close()
+    return datos
 
     return tarea
 
@@ -134,6 +137,7 @@ def modificar_tarea(id,descripcion,prioridad, complejidad, estado): # Lista de t
 
     conexion.commit()
     conexion.close()
+    return id_solicitud
 
     return id
 

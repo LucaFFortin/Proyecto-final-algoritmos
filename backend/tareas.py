@@ -7,6 +7,9 @@ from tad_lista import Lista, insertar, lista_vacia, eliminar, tamanio, buscar, i
 # GET = el cliente solo quiere leer datos del servidor, no quiere modificar nada.
 # POST = el cliente quiere enviar datos al servidor, quiere modificar algo en el servidor.
 
+
+
+
 """
 Lista enlazada — Tareas operativas
 - Agregar una tarea desde tu formulario.
