@@ -1,159 +1,198 @@
+
 import sqlite3
 import os
 
-# Esto asegura que tareas.db se cree siempre al lado de este archivo conexion.py
-RUTA_BD = os.path.join(os.path.dirname(__file__), "tareas.db")
+RUTA_DB = os.path.join(os.path.dirname(__file__), "tareas.db")
+
+ESTADOS_TAREA = ["Pendiente","En Progreso" ,"Completada"]
+
+PRIORIDAD_TAREAS = {
+    "baja": 3,
+    "media": 2,
+    "alta": 1,
+}
+
 
 
 def conectar():
-    """Crea y devuelve la conexión con la base de datos."""
-    return sqlite3.connect(RUTA_BD)
+    """Establece la conexión con la base de datos SQLite."""
+    return sqlite3.connect(RUTA_DB)
+
+    
 
 
-def crear_tabla():
-    """Crea la tabla si no existe y agrega responsable a instalaciones anteriores."""
-    conexion = conectar()
-    cursor = conexion.cursor()
-
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS tareas (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            descripcion TEXT,
-            responsable TEXT,
-            estado TEXT
-        )
-    """)
-        
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS tareas_completadas (
-            id TEXT PRIMARY KEY,
-            descripcion TEXT,
-            responsable TEXT,
-            estado TEXT
-            estado_pasado TEXT,
-            nodo_anterior TEXT,
-            nodo_siguiente TEXT,
-        )
-    """)
-
-    # Si la base ya existía con la estructura anterior, agregamos
-    # solamente la columna nueva sin borrar las tareas existentes.
-    cursor.execute("PRAGMA table_info(tareas)")
-    columnas = [fila[1] for fila in cursor.fetchall()]
-
-    if "responsable" not in columnas:
-        cursor.execute(
-            "ALTER TABLE tareas ADD COLUMN responsable TEXT DEFAULT ''"
-        )
-
-    conexion.commit()
-    conexion.close()
-
-
-def guardar_tarea(descripcion, responsable="", estado="Pendiente"):
+def guardar_tarea(descripcion, prioridad= PRIORIDAD_TAREAS["baja"], complejidad= 2, estado= ESTADOS_TAREA[0]): # para lista 
     """Inserta una tarea nueva en la base de datos."""
+
     conexion = conectar()
     cursor = conexion.cursor()
 
     cursor.execute("""
-        INSERT INTO tareas (descripcion, responsable, estado)
-        VALUES (?, ?, ?)
-    """, (descripcion, responsable, estado))
+        INSERT INTO tareas (
+            descripcion,
+            prioridad,
+            complejidad,
+            estado
+        )
+        VALUES (?, ?, ?, ?)
+    """, (
+        descripcion,
+        prioridad,
+        complejidad,
+        estado,
+    ))
+
+    id_bd = cursor.lastrowid
 
     conexion.commit()
     conexion.close()
 
-def obtener_tareas():
-    """Devuelve todas las tareas guardadas en la base de datos."""
+    return id_bd
+
+
+def obtener_tareas(): # Recupera todas las tareas guardadas.Lista de tareas
+    """Obtiene todas las tareas de la base de datos."""
+
     conexion = conectar()
     cursor = conexion.cursor()
 
-    cursor.execute("""
-        SELECT id, descripcion, responsable, estado
-        FROM tareas
-    """)
+    cursor.execute("""SELECT * FROM tareas""")
 
     filas = cursor.fetchall()
+
     conexion.close()
 
-    lista = []
+    return filas
 
-    for fila in filas:
-        lista.append({
-            "id": fila[0],
-            "descripcion": fila[1],
-            "responsable": fila[2],
-            "estado": fila[3]
-        })
 
-    return lista
+def obtener_tarea(id): # Busca una tarea por su ID.Lista de tareas
+    """Obtiene una tarea específica por su ID."""
 
-def obtener_tarea(id):
-    """Devuelve una tarea guardada en la base de datos."""
     conexion = conectar()
     cursor = conexion.cursor()
 
-    cursor.execute("""
-        SELECT id, descripcion, responsable, estado
-        FROM tareas
-        WHERE id = ?
-    """, (id))
+    cursor.execute("""SELECT * FROM tareas WHERE id = ?""", (id,))
 
     tarea = cursor.fetchone()
+
     conexion.close()
 
     return tarea
 
-def obtener_tarea_completada(id):
-    """Devuelve una tarea completada guardada en la base de datos."""
+
+def actualizar_estado_tarea(id_bd, estado): # Lista y operación de deshacer para la pila ya que necesita actualizar el estado de la tarea en la base de datos
+    """Actualiza el estado de una tarea."""
+
     conexion = conectar()
     cursor = conexion.cursor()
 
-    cursor.execute("""
-        SELECT *
-        FROM tareas_completadas
-        WHERE id = ?
-    """, (id))
+    cursor.execute("""UPDATE tareas SET estado = ? WHERE id = ?""", (estado, id_bd))
 
-    tarea = cursor.fetchone()
+    conexion.commit()
     conexion.close()
 
-    return tarea
 
-def completar_tarea(id, estado_anterior, nodo_anterior, nodo_siguiente):
-    """Guarda una tarea en la tabla tareas_completadas."""
+def modificar_tarea(id,descripcion,prioridad, complejidad, estado): # Lista de tareas
+    """Modifica una tarea de la tabla tareas."""
+
     conexion = conectar()
     cursor = conexion.cursor()
 
     tarea = obtener_tarea(id)
 
-    cursor.execute("""
-        INSERT INTO tareas_completadas (id, descripcion, responsable, estado, estado_anterior, nodo_anterior, nodo_siguiente)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, tarea[0], tarea[1], tarea[2], tarea[3], estado_anterior, nodo_anterior, nodo_siguiente)
+    if tarea is None:
+        conexion.close()
+        return None
 
-    # TODO:
-    # habria que eliminar de la tabla tareas la tarea completada
-    # o, fucionar las tablas y en tareas agregar los campos faltantes
+    if not descripcion:
+        descripcion = tarea[1]
+
+    if not prioridad:
+        prioridad = tarea[2]
+
+    if not complejidad:
+        complejidad = tarea[3]
+
+    if not estado:
+        estado = tarea[4]
+
+    cursor.execute("""
+        UPDATE tareas
+        SET
+            descripcion = ?,
+            prioridad = ?,
+            complejidad = ?,
+            estado = ?,
+        WHERE id = ?
+    """, (
+        descripcion,
+        prioridad,
+        complejidad,
+        estado,
+        id
+    ))
 
     conexion.commit()
     conexion.close()
 
-def deshacer_tarea_completada(id, estado_anterior, nodo_anterior, nodo_siguiente):
-    """Deshace la ultima tarea guardada."""
+    return id
+
+
+def eliminar_tarea(id): # Lista de tareas
+    """Elimina una tarea de la tabla tareas."""
+
     conexion = conectar()
     cursor = conexion.cursor()
 
-    tarea = obtener_tarea_completada(id)
-
-    cursor.execute("""
-        INSERT INTO tareas_completadas (id, descripcion, responsable, estado, estado_anterior, nodo_anterior, nodo_siguiente)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, tarea[0], tarea[1], tarea[2], tarea[3], estado_anterior, nodo_anterior, nodo_siguiente)
+    cursor.execute("""DELETE FROM tareas WHERE id = ?""", (id,))
 
     conexion.commit()
     conexion.close()
 
-# Al cargar este archivo, aseguramos que la tabla exista
-# y que las bases anteriores tengan la columna responsable.
-crear_tabla()
+
+#---------------------------------------------------------------------------------------------------------------------------------------------
+
+def guardar_solicitud(descripcion, prioridad=2, estado="Pendiente"): # Para guardar una nueva solicitud en la base de datos. Cola de solicitudes
+    """Inserta una nueva solicitud en la base de datos."""
+    conexion = conectar()
+    cursor = conexion.cursor()
+
+    cursor.execute("""
+        INSERT INTO solicitudes (descripcion, prioridad, estado)
+        VALUES (?, ?, ?)
+    """, (descripcion, prioridad, estado))
+
+    id_solicitud = cursor.lastrowid
+
+    conexion.commit()
+    conexion.close()
+
+    return id_solicitud
+
+def actualizar_estado_solicitud(id_solicitud, estado): # Para actualizar el estado de una solicitud en la base de datos. Cola de solicitudes
+    """Actualiza el estado de una solicitud."""
+
+    conexion = conectar()
+    cursor = conexion.cursor()
+
+    cursor.execute("""UPDATE solicitudes SET estado = ? WHERE id = ?""", (estado, id_solicitud))
+
+    conexion.commit()
+    conexion.close()
+
+def obtener_solicitudes_pendientes(): # Esta función permite reconstruir la cola cuando se inicia el servidor. Cola de solicitudes
+    """Obtiene todas las solicitudes pendientes de la base de datos."""
+    conexion = conectar()
+    cursor = conexion.cursor()
+
+    cursor.execute("""
+        SELECT id, descripcion, prioridad, estado
+        FROM solicitudes
+        WHERE estado = 'Pendiente'
+        ORDER BY id ASC
+    """)
+
+    filas = cursor.fetchall()
+    conexion.close()
+
+    return filas
