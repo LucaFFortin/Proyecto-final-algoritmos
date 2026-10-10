@@ -3,97 +3,145 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Listado de tareas</title>
-
-    <!-- Hoja de estilos principal -->
+    <title>TaskFlow - Administración de tareas</title>
     <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
-    <header class="encabezado">
-        <div class="logo">
-            <img src="taskflow.jpg" alt="TaskFlow">
-            <span class="logo-titulo">TaskFlow</span>
-        </div>
-        <div class="acciones-cabecera">
-            <button id="botonNuevaTarea" class="boton-agregar-tarea">
-                Nueva Tarea
-            </button>
-            <div class="buscador">
-                <input
-                    type="text"
-                    id="buscarTarea"
-                    placeholder="Buscar tarea..."
-                    aria-label="Buscar tarea"
-                >
-                <button id="botonBuscar">Buscar</button>
+<header class="encabezado">
+    <div class="logo">
+        <img src="taskflow.jpg" alt="TaskFlow">
+        <span class="logo-titulo">TaskFlow</span>
+    </div>
+    
+    <!-- Botón de menú para el historial de tareas completadas -->
+    <div class="acciones-cabecera">
+        <div class="desplegable-historial">
+            <button id="botonMenuHistorial" class="boton-menu-historial" aria-label="Abrir menú" aria-expanded="false">☰</button>
+            <div id="menuHistorial" class="menu-desplegable menu-historial">
+                <button id="botonAbrirHistorial" class="boton-accion">Historial de completadas</button>
+                <button id="botonDeshacer" class="boton-accion">Deshacer última completada</button>
             </div>
         </div>
-    </header>
-
-    <main class="contenedor">
-        <section class="panel-tareas">
-            <div class="titulo-panel">
-                <h1>Listado de tareas</h1>
-                <p>Consulta y busca las tareas registradas.</p>
+        <!-- Botón de menú para la mesa de ayuda -->
+        <div class="desplegable-ayuda">
+            <button id="botonMesaAyuda" class="boton-accion boton-mesa-ayuda">Mesa de ayuda ▾</button>
+            <div id="menuMesaAyuda" class="menu-desplegable">
+                <button id="botonNuevaSolicitud" class="boton-accion">Registrar solicitud</button>
+                <button id="botonVerSolicitudes" class="boton-accion">Ver solicitudes</button>
             </div>
-            <div id="listaTareas" class="lista-tareas"></div>
+        </div>
 
-            <p id="sinResultados" class="sin-resultados">
-                No se encontraron tareas.
-            </p>
-            
-            <button id="botonHistorial" class="boton-historial boton-ver-historial">Ver tareas completadas</button>
-            <button id="botonDeshacerHistorial" class="boton-historial boton-deshacer-historial">Deshacer ultima tarea completada</button>
-            <div id="paginacion" class="paginacion"></div>
-        </section>
-    </main>
+        <button id="botonNuevaTarea" class="boton-agregar-tarea">Nueva Tarea</button>
+        <button id="botonComplejidad" class="boton-accion">Complejidad</button>
 
-    <div id="ventanaTarea" class="ventana-fondo">
-        <div class="ventana-caja">
-            <h2>Nueva Tarea</h2>
-            <p>Ingresa los datos para registrar la tarea en el sistema.</p>
-
-            <form id="formularioTarea">
-                <div class="campo">
-                    <label for="inputDescripcion">Descripción de la tarea:</label>
-                    <input 
-                        type="text" 
-                        id="inputDescripcion" 
-                        placeholder="Ej. Revisar servidor de base de datos..." 
-                        required
-                    >
-                </div>
-
-                <div class="campo">
-                    <label for="inputResponsable">Responsable:</label>
-                    <input 
-                        type="text" 
-                        id="inputResponsable" 
-                        placeholder="Ej. Juan Pérez" 
-                        required
-                    >
-                </div>
-                
-                <div class="campo">
-                    <label for="inputResponsable">Prioridad:</label>
-                    <input 
-                        type="text" 
-                        id="inputPrioridad" 
-                        placeholder="Ej. 1" 
-                        required
-                    >
-                </div>
-
-                <div class="ventana-botones">
-                    <button type="button" id="botonCancelarVentana" class="boton-cancelar">Cancelar</button>
-                    <button type="submit" class="boton-guardar">Guardar Tarea</button>
-                </div>
-            </form>
+        <div class="buscador">
+            <input type="text" id="buscarTarea" placeholder="Buscar tarea..." aria-label="Buscar tarea">
+            <button id="botonBuscar">Buscar</button>
         </div>
     </div>
+</header>
 
-    <!-- JavaScript de la página -->
-    <script src="js/app.js"></script>
+<main class="contenedor">
+    <section class="panel-tareas">
+        <div class="titulo-panel">
+            <h1>Listado de tareas</h1>
+            <p>Las tareas se mantienen ordenadas por prioridad.</p>
+        </div>
+
+        <div id="listaTareas" class="lista-tareas"></div>
+        <p id="sinResultados" class="sin-resultados">No se encontraron tareas.</p>
+        <div id="paginacion" class="paginacion"></div>
+    </section> 
+    
+</main>
+
+<!-- Ventana de nueva tarea -->
+<div id="ventanaTarea" class="ventana-fondo">
+    <div class="ventana-caja">
+        <h2>Nueva Tarea</h2>
+        <p>Ingresá los datos para registrar la tarea.</p>
+        <form id="formularioTarea">
+            <div class="campo">
+                <label for="inputDescripcion">Descripción:</label>
+                <input type="text" id="inputDescripcion" required>
+            </div>
+            <div class="fila-campos">
+                <div class="campo">
+                    <label for="inputPrioridad">Prioridad:</label>
+                    <select id="inputPrioridad">
+                        <option value="1">Alta</option>
+                        <option value="2" selected>Media</option>
+                        <option value="3">Baja</option>
+                    </select>
+                </div>
+                <div class="campo">
+                    <label for="inputComplejidad">Complejidad (1-10):</label>
+                    <input type="number" id="inputComplejidad" min="1" max="10" value="1" required>
+                </div>
+            </div>
+            <div class="ventana-botones">
+                <button type="button" id="botonCancelarVentana" class="boton-cancelar">Cancelar</button>
+                <button type="submit" class="boton-guardar">Guardar Tarea</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Ventana de historial de tareas completadas -->
+<div id="ventanaHistorial" class="ventana-fondo">
+    <div class="ventana-caja ventana-historial-caja">
+        <div class="cabecera-historial">
+            <div><h2>Historial de tareas completadas</h2><p>Las tareas completadas se guardan en la pila.</p></div>
+            <button type="button" id="botonCerrarHistorial" class="boton-cancelar">Cerrar</button>
+        </div>
+        <div id="listaHistorial" class="lista-historial"></div>
+    </div>
+</div>
+
+<!-- Ventana de registro de solicitud -->
+<div id="ventanaSolicitud" class="ventana-fondo">
+    <div class="ventana-caja">
+        <h2>Registrar solicitud</h2>
+        <p>La solicitud se agregará al final de la cola.</p>
+        <form id="formularioSolicitud">
+            <div class="campo">
+                <label for="inputSolicitud">Descripción:</label>
+                <input type="text" id="inputSolicitud" required>
+            </div>
+            <div class="campo">
+                <label for="inputPrioridadSolicitud">Prioridad:</label>
+                <select id="inputPrioridadSolicitud">
+                    <option value="1">Alta</option>
+                    <option value="2" selected>Media</option>
+                    <option value="3">Baja</option>
+                </select>
+            </div>
+            <div class="ventana-botones">
+                <button type="button" id="botonCancelarSolicitud" class="boton-cancelar">Cancelar</button>
+                <button type="submit" class="boton-guardar">Registrar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Ventana de solicitudes pendientes -->
+<div id="ventanaSolicitudes" class="ventana-fondo">
+    <div class="ventana-caja ventana-historial-caja">
+        <div class="cabecera-historial">
+            <div>
+                <h2>Solicitudes de mesa de ayuda</h2>
+                <p>Se atienden en orden de llegada (primero en entrar, primero en salir).</p>
+            </div>
+            <button type="button" id="botonCerrarSolicitudes" class="boton-cancelar">Cerrar</button>
+        </div>
+        <div id="listaSolicitudes" class="lista-historial"></div>
+        <div class="ventana-botones">
+            <button type="button" id="botonAtenderSolicitud" class="boton-guardar">Atender siguiente</button>
+        </div>
+        <p id="mensajeSolicitudes" role="status"></p>
+    </div>
+</div>
+
+<script src="js/app.js"></script>
 </body>
 </html>
