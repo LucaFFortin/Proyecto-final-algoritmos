@@ -513,3 +513,40 @@ body {
 .ventana-caja h2 { color: white; margin-bottom: 8px; }
 .ventana-caja p { color: #bdbdbd; margin-bottom: 22px; }
 
+
+
+/* Menú de tres rayitas para el historial de la pila */
+.desplegable-historial { position: relative; }
+.boton-menu-historial {
+    width: 48px; height: 48px; border: 0; border-radius: 6px;
+    background: #222; color: #fff; font-size: 25px; cursor: pointer;
+}
+.boton-menu-historial:hover { background: #3a3a3a; }
+.menu-historial { left: 0; right: auto; min-width: 230px; }
+.ventana-historial-caja { max-width: 700px; width: calc(100% - 36px); max-height: 80vh; overflow-y: auto; }
+.cabecera-historial { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+.cabecera-historial h2 { margin-top: 0; }
+.lista-historial { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+.item-historial { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px; border-radius: 7px; background: #292929; color: #fff; }
+.item-historial p { margin: 6px 0 0; color: #ccc; font-size: 14px; }
+.item-historial .estado { white-space: nowrap; }
+.historial-vacio { color: #555; padding: 16px 0; }
+@media (max-width: 700px) {
+    .acciones-cabecera { width: 100%; flex-wrap: wrap; justify-content: flex-start; }
+    .item-historial { align-items: flex-start; flex-direction: column; }
+}
+
+
+/* Ventana de solicitudes de la cola de soporte */
+#ventanaSolicitudes .ventana-botones {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 18px;
+}
+#mensajeSolicitudes {
+    color: #bdbdbd;
+    margin: 12px 0 0;
+}
+#listaSolicitudes .item-historial:first-child {
+    border-left: 4px solid #2b7a4b;
+}
