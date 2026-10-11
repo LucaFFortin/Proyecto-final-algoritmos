@@ -1,0 +1,14 @@
+CREATE TABLE IF NOT EXISTS tareas (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    descripcion TEXT NOT NULL,
+    prioridad INTEGER NOT NULL DEFAULT 2,
+    complejidad INTEGER NOT NULL DEFAULT 1,
+    estado TEXT NOT NULL DEFAULT 'pendiente'
+);
+
+CREATE TABLE IF NOT EXISTS solicitudes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    descripcion TEXT NOT NULL,
+    prioridad INTEGER NOT NULL DEFAULT 2,
+    estado TEXT NOT NULL DEFAULT 'Pendiente'
+);

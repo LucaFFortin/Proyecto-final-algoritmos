@@ -11,6 +11,26 @@ from tad_lista import Lista, insertar, lista_vacia, eliminar, tamanio, buscar, i
 
 
 """
+Lista enlazada — Tareas operativas
+- Agregar una tarea desde tu formulario.
+- Ordenar por prioridad.
+- Actualizar el estado o eliminar por ID.
+- Mostrar las tareas pendientes en la interfaz.
+
+Pila — Historial de tareas completadas
+- Al completar una tarea, quitarla de la lista.
+- Guardarla en la cima de la pila.
+- Permitir deshacer la última completada y restaurar su estado anterior en SQLite.
+
+Cola — Tickets de soporte
+- Registrar solicitudes de los empleados.
+- Agregar cada ticket al final mediante arribo().
+- Mostrar los usuarios en orden de llegada.
+- Atender al primero mediante atencion() y retirarlo de la cola.
+"""
+
+
+"""
 Recibir la nueva tarea.
 Comparar su prioridad con la primera tarea.
 Si corresponde antes, pasa a ser la primera.
@@ -60,24 +80,7 @@ Mantener el resto de la lista conectado.
 # prioridad: 1 (alta), 2 (media), 3 (baja)
 #  estado actual (Pendiente, En Progreso, Completada). 
 
-tareas = {
-    "tarea1": {"descripcion": "Revisar conexión de red", "prioridad": 1, "estado": "pendiente"},
-    "tarea2": {"descripcion": "Configurar computadora", "prioridad": 2, "estado": "pendiente"},
-    "tarea3": {"descripcion": "Instalar impresora", "prioridad": 3, "estado": "pendiente"},
-}
-
 lista_tareas = Lista()
-
-for tarea, info in tareas.items():
-
-    dato = {
-        "id_tarea": tarea,
-        "descripcion": info["descripcion"],
-        "prioridad": info["prioridad"],
-        "estado": info["estado"]
-    }
-
-    insertar_por_prioridad(lista_tareas, dato)
 
 
 # Agregado de tareas pendientes (TDA Lista Enlazada):
@@ -85,17 +88,20 @@ for tarea, info in tareas.items():
 
 
 
-def agregar_tarea(lista_tareas, id, descripcion, prioridad, estado, responsable=""): # -------- agregar tarea -------------
-        dato = {
-            "id_tarea": id,
-            "descripcion": descripcion,
-            "prioridad": prioridad,
-            "estado": estado,
-            "responsable": responsable
-        }
+def agregar_tarea(lista_tareas, id, descripcion, prioridad, estado, complejidad=1): # -------- agregar tarea -------------
+    dato = {
+        "id_tarea": id,
+        "descripcion": descripcion,
+        "prioridad": prioridad,
+        "estado": estado,
+        "complejidad": complejidad
+    }
 
-        insertar_por_prioridad(lista_tareas, dato)
-        print("Tarea agregada correctamente.")
+    insertar_por_prioridad(lista_tareas, dato)
+    print("Tarea agregada correctamente.")
+
+
+
 
 
 def actualizar_tarea(lista_tareas, id, descripcion, prioridad, estado): # -------- actualizar tarea -------------
@@ -128,10 +134,10 @@ def eliminar_id(lista_tareas, id): # -------- eliminar tarea -------------
         dato = aux.info
         eliminar(lista_tareas, dato)
         print("Tarea eliminada correctamente.")
-    else:
-        print("No se encontró la tarea para eliminar con el ID proporcionado.")
+        return dato
 
-    return dato 
+    print("No se encontró la tarea para eliminar con el ID proporcionado.")
+    return None 
 
 
 
@@ -140,7 +146,7 @@ def eliminar_id(lista_tareas, id): # -------- eliminar tarea -------------
     
 pila_historial = Pila()
 
-
+# en un despegable historial de completado 
 # el usuario va elegir un id = como tarea1, tarea2, tarea3, y se va a marcar como completada, y se va a mover de la lista a la pila historial.
 
 def completar_tarea(lista_tareas, pila_historial, id):
@@ -167,7 +173,9 @@ def deshacer_ultima_completada(lista_tareas, pila_historial):
     print("Tarea restaurada a la lista de pendientes.")
     return tarea
 
-def obtener_todas_las_tareas(lista):
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+
+def obtener_todas_las_tareas(lista): # lo manda a los que seria al JSON en forma de lista (LISTAS)
     """Recorre los nodos de la lista enlazada y devuelve una lista común para JSON."""
     resultado = []
     actual = lista.inicio
@@ -175,3 +183,67 @@ def obtener_todas_las_tareas(lista):
         resultado.append(actual.info)
         actual = actual.sig
     return resultado
+
+# --------------------------------------------------------------------------------------------------------------------------------------------
+
+def obtener_historial(pila_historial): # PILA le pasa 
+    """Devuelve las tareas completadas desde la cima de la pila sin vaciarla."""
+    resultado = []
+    actual = pila_historial.cima
+    while actual is not None:
+        resultado.append(actual.info)
+        actual = actual.sig
+    return resultado
+
+
+# Atencion de solicitudes (Cola)
+# supongamos que entramos a la funcionalidad de solicitudes el empleado va a ingresar una solicitud 
+# donde esto va a ser manejado por una cola (tendria que a ver un apartado de solicitudes)
+# si fue atendido se le apreta un boton atendido y se saca de la lista 
+
+cola_soporte = Cola()
+
+def agregar_solicitud(cola_soporte, id_solicitud, descripcion, prioridad, estado="Pendiente"):
+    """Agrega una solicitud al final de la cola respetando el orden de llegada."""
+    dato = {
+        "id_solicitud": id_solicitud,
+        "descripcion": descripcion,
+        "prioridad": prioridad,
+        "estado": estado,
+    }
+    arribo(cola_soporte, dato)
+    print("Solicitud agregada a la cola.")
+    return dato
+
+
+def atender_solicitud(cola_solicitudes):
+    """Atiende la primera solicitud en la cola."""
+    if cola_vacia(cola_solicitudes):
+        print("No hay solicitudes para atender.")
+        return None
+
+    solicitud = atencion(cola_solicitudes)
+    print("Solicitud atendida y removida de la cola.")
+    return solicitud
+
+def obtener_solicitudes(cola_soporte):
+    """Devuelve las solicitudes sin modificar la cola."""
+    resultado = []
+    actual = cola_soporte.frente
+
+    while actual is not None:
+        resultado.append(actual.info)
+        actual = actual.sig
+
+    return resultado
+
+
+
+# Arboles 
+# Tarea más compleja y menos compleja lo va a ir ordenando en la lista de tareas / se tiene que pasar al mismo tiempo de lista al arbol
+# listar el conjunto mediante inorden
+
+
+# Despegable menor compleja buscador diciendo si queres la más compleja y menos compleja
+
+
