@@ -7,9 +7,6 @@ from tad_lista import Lista, insertar, lista_vacia, eliminar, tamanio, buscar, i
 # GET = el cliente solo quiere leer datos del servidor, no quiere modificar nada.
 # POST = el cliente quiere enviar datos al servidor, quiere modificar algo en el servidor.
 
-
-
-
 """
 Lista enlazada — Tareas operativas
 - Agregar una tarea desde tu formulario.
@@ -20,7 +17,7 @@ Lista enlazada — Tareas operativas
 Pila — Historial de tareas completadas
 - Al completar una tarea, quitarla de la lista.
 - Guardarla en la cima de la pila.
-- Permitir deshacer la última completada y restaurar su estado anterior en SQLite.
+- Permitir deshacer la última completada y restaurar su estado anterior
 
 Cola — Tickets de soporte
 - Registrar solicitudes de los empleados.
@@ -29,50 +26,6 @@ Cola — Tickets de soporte
 - Atender al primero mediante atencion() y retirarlo de la cola.
 """
 
-
-"""
-Recibir la nueva tarea.
-Comparar su prioridad con la primera tarea.
-Si corresponde antes, pasa a ser la primera.
-Si no, avanzar por la lista.
-Buscar el punto donde debe insertarse.
-Enlazarla ahí.
-Mantener el resto de la lista conectado.
-"""
-
-"""
-┌──────────────────────┐
-│      FRONTEND        │
-│ HTML + CSS + JS      │
-│                      │
-│  Usuario interactúa  │
-└──────────┬───────────┘
-           │
-           │ fetch()
-           │ HTTP
-           ▼
-┌──────────────────────┐
-│       BACKEND        │
-│      Python          │
-│                      │
-│ http.server          │
-│ lógica del sistema   │
-│ TDA Lista            │
-│ TDA Pila             │
-│ TDA Cola             │
-│ TDA Árbol            │
-└──────────┬───────────┘
-           │
-           │ sqlite3
-           ▼
-┌──────────────────────┐
-│    BASE DE DATOS     │
-│       SQLite         │
-│                      │
-│ tareas               │
-│ soporte              │
-└──────────────────────┘
-"""
 
 #El "puente" entre frontend y backend sería HTTP + JSON.
 #El puente entre backend y base de datos sería sqlite3.
@@ -122,6 +75,19 @@ def actualizar_tarea(lista_tareas, id, descripcion, prioridad, estado): # ------
         print("Tarea existente actualizada correctamente.")
     else:
         print("No se encontró la tarea con el ID proporcionado.")
+
+
+def actualizar_estado_tarea(lista_tareas, id, estado):
+    """Actualiza el estado de una tarea que sigue en la lista enlazada."""
+    actual = lista_tareas.inicio
+
+    while actual is not None:
+        if actual.info["id_tarea"] == id:
+            actual.info["estado"] = estado
+            return actual.info
+        actual = actual.sig
+
+    return None
 
 
 def eliminar_id(lista_tareas, id): # -------- eliminar tarea -------------
@@ -245,5 +211,73 @@ def obtener_solicitudes(cola_soporte):
 
 
 # Despegable menor compleja buscador diciendo si queres la más compleja y menos compleja
+
+
+
+def insertar_tarea_arbol(raiz, tarea):
+    """Inserta una tarea en el árbol según su complejidad."""
+    if raiz is None:
+        return nodoArbol(tarea)
+
+    complejidad = tarea["complejidad"]
+    complejidad_raiz = raiz.info["complejidad"]
+
+    if complejidad < complejidad_raiz:
+        raiz.izq = insertar_tarea_arbol(raiz.izq, tarea)
+    else:
+        raiz.der = insertar_tarea_arbol(raiz.der, tarea)
+
+    return raiz
+
+
+def cargar_lista_en_arbol(lista_tareas):
+    """Construye el árbol recorriendo la lista sin modificarla."""
+    raiz = None
+    actual = lista_tareas.inicio
+
+    while actual is not None:
+        raiz = insertar_tarea_arbol(raiz, actual.info)
+        actual = actual.sig
+
+    return raiz
+
+def tarea_menos_compleja(raiz):
+    if raiz is None:
+        return None
+
+    while raiz.izq is not None:
+        raiz = raiz.izq
+
+    return raiz.info
+
+def tarea_mas_compleja(raiz):
+    if raiz is None:
+        return None
+
+    while raiz.der is not None:
+        raiz = raiz.der
+
+    return raiz.info
+
+
+def obtener_tareas_arbol(raiz, lista):
+    """Recorre el árbol en inorden y agrega las tareas a una lista."""
+    if raiz is not None:
+        obtener_tareas_arbol(raiz.izq, lista)
+        lista.append(raiz.info)
+        obtener_tareas_arbol(raiz.der, lista)
+
+def obtener_complejidad():
+    """Devuelve las tareas ordenadas por complejidad usando el árbol."""
+    raiz = cargar_lista_en_arbol(lista_tareas)
+    lista_ordenada = []
+    obtener_tareas_arbol(raiz, lista_ordenada)
+
+    return {
+        "tareas": lista_ordenada,
+        "menor": tarea_menos_compleja(raiz),
+        "mayor": tarea_mas_compleja(raiz)
+    }
+
 
 
