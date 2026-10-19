@@ -73,6 +73,27 @@ class ManejadorTareas(BaseHTTPRequestHandler):
 
             responder(self, 201, {"mensaje": "Tarea agregada con éxito", "id": id_tarea})
 
+        elif ruta.path == "/api/tareas/estado":
+            # Cambia entre Pendiente y En Progreso y guarda el cambio en SQLite.
+            id_tarea = datos.get("id")
+            nuevo_estado = str(datos.get("estado", "")).strip().lower()
+
+            if nuevo_estado not in ("pendiente", "en progreso"):
+                responder(self, 400, {"mensaje": "Estado no válido."})
+                return
+
+            tarea = tareas.actualizar_estado_tarea(
+                tareas.lista_tareas, id_tarea, nuevo_estado
+            )
+
+            if tarea is None:
+                responder(self, 404, {"mensaje": "No se encontró la tarea."})
+                return
+
+            id_bd = int(str(id_tarea).replace("tarea", ""))
+            conexion.actualizar_estado_tarea(id_bd, nuevo_estado)
+            responder(self, 200, {"mensaje": "Estado actualizado.", "estado": nuevo_estado})
+
         elif ruta.path == "/api/tareas/completar": # para completar la tarea lista 
             id_tarea = datos.get("id")
             tarea = tareas.completar_tarea(tareas.lista_tareas, tareas.pila_historial, id_tarea)
