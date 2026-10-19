@@ -9,35 +9,6 @@ class nodoArbol(object):
         self.der = None
         self.info = info
 
-class nodoArbol_indice(object):
-    
-
-    def __init__(self, texto, pagina):
-        """Crea un nodo con la información cargada."""
-        self.izq = None
-        self.der = None
-        self.texto = texto # guardo el texto y pagina 
-        self.pagina = pagina 
-
-class nodoArbol_heroe_villano(object):
-    
-
-    def __init__(self, info, opcion):
-        """Crea un nodo con la información cargada."""
-        self.izq = None
-        self.der = None
-        self.opcion = opcion
-        self.info = info
-
-def insertar_nodo_villano_heroe(raiz, heroe_villano, opcion):
-    """Inserta un dato al árbol."""
-    if(raiz is None):
-        raiz = nodoArbol_heroe_villano(heroe_villano, opcion)
-    elif(heroe_villano < raiz.info):
-        raiz.izq = insertar_nodo_villano_heroe(raiz.izq, heroe_villano, opcion)
-    else:
-        raiz.der = insertar_nodo_villano_heroe(raiz.der, heroe_villano, opcion)
-    return raiz
 
 def insertar_nodo(raiz, dato):
     """Inserta un dato al árbol."""
