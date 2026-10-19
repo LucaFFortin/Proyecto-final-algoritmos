@@ -53,6 +53,13 @@ function obtenerClaseEstado(estado) {
     return "pendiente";
 }
 
+function obtenerTextoEstado(estado) {
+    const est = (estado || "pendiente").toString().toLowerCase();
+    if (est === "en progreso" || est === "en proceso") return "En Progreso";
+    if (est === "completada") return "Completada";
+    return "Pendiente";
+}
+
 // solo para que muestre las tareas en la página actual python se va encargando de traer las tareas desde la base de datos
 function mostrarTareas() {
     listaTareas.innerHTML = "";
@@ -74,7 +81,9 @@ function mostrarTareas() {
                 <p><strong>ID:</strong> ${tarea.id} | <strong>Prioridad:</strong> ${obtenerTextoPrioridad(tarea.prioridad)} | <strong>Complejidad:</strong> ${tarea.complejidad}</p>
             </div>
             <div class="tarea-acciones">
-                <span class="estado ${obtenerClaseEstado(tarea.estado)}">${tarea.estado}</span>
+                <button class="estado estado-clickeable ${obtenerClaseEstado(tarea.estado)}"
+                        data-id="${tarea.id}" aria-label="Cambiar estado de la tarea"
+                        title="Hacé clic para cambiar entre Pendiente y En Progreso">${obtenerTextoEstado(tarea.estado)}</button>
                 <button class="boton-completar" data-id="${tarea.id}">Completar</button>
                 <button class="boton-eliminar" data-id="${tarea.id}">Eliminar</button>
             </div>
@@ -82,6 +91,9 @@ function mostrarTareas() {
         listaTareas.appendChild(elemento);
     });
 
+    document.querySelectorAll(".estado-clickeable").forEach(boton => {
+        boton.addEventListener("click", () => cambiarEstadoTarea(boton.dataset.id));
+    });
     document.querySelectorAll(".boton-completar").forEach(boton => {
         boton.addEventListener("click", () => completarTarea(boton.dataset.id));
     });
@@ -142,6 +154,27 @@ function cargarTareasDesdeServidor() {
             crearPaginacion();
         })
         .catch(() => console.warn("Servidor Python desconectado."));
+}
+
+// Alterna el estado con un clic y guarda el cambio en el servidor y SQLite.
+function cambiarEstadoTarea(id) {
+    const tarea = tareas.find(t => t.id === id);
+    if (!tarea) return;
+
+    const estadoActual = (tarea.estado || "pendiente").toLowerCase();
+    const nuevoEstado = estadoActual === "en progreso" ? "pendiente" : "en progreso";
+
+    fetch("http://localhost:8000/api/tareas/estado", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: id, estado: nuevoEstado })
+    })
+    .then(respuesta => respuesta.json().then(datos => ({ ok: respuesta.ok, datos })))
+    .then(({ ok, datos }) => {
+        if (!ok) throw new Error(datos.mensaje || "No se pudo cambiar el estado.");
+        cargarTareasDesdeServidor();
+    })
+    .catch(error => alert(error.message || "No se pudo cambiar el estado."));
 }
 
 // envía una solicitud al servidor para completar una tarea y recarga la lista de tareas
@@ -382,16 +415,38 @@ function cargarSolicitudes() {
         });
 }
 
-// carga la complejidad de las tareas desde el servidor y actualiza la lista de complejidad mostradas PARA ARBOLES
+// Pide al servidor las tareas ordenadas por el árbol de complejidad.
+const ventanaComplejidad = document.getElementById("ventanaComplejidad");
+
 document.getElementById("botonComplejidad").addEventListener("click", () => {
     fetch("http://localhost:8000/api/complejidad")
         .then(r => r.json())
-        .then(lista => {
+        .then(datos => {
             const contenedor = document.getElementById("listaComplejidad");
-            contenedor.innerHTML = lista.length ? lista.map(t =>
-                `<div class="item-extra"><strong>${t.id_tarea}</strong> - ${t.descripcion} <span>Complejidad: ${t.complejidad}</span></div>`
-            ).join("") : "<p>No hay tareas para mostrar.</p>";
-        });
+            const resumen = document.getElementById("resumenComplejidad");
+
+            if (datos.tareas.length === 0) {
+                resumen.innerHTML = "";
+                contenedor.innerHTML = "<p>No hay tareas para mostrar.</p>";
+            } else {
+                resumen.innerHTML = `
+                    <p><strong>Menor complejidad:</strong> ${datos.menor.descripcion} (${datos.menor.complejidad})</p>
+                    <p><strong>Mayor complejidad:</strong> ${datos.mayor.descripcion} (${datos.mayor.complejidad})</p>`;
+                contenedor.innerHTML = datos.tareas.map(t =>
+                    `<div class="item-historial"><div><strong>${t.id_tarea}</strong> - ${t.descripcion}<p>Complejidad: ${t.complejidad}</p></div></div>`
+                ).join("");
+            }
+            ventanaComplejidad.style.display = "flex";
+        })
+        .catch(error => alert("No se pudieron cargar las tareas por complejidad."));
+});
+
+document.getElementById("botonCerrarComplejidad").addEventListener("click", () => {
+    ventanaComplejidad.style.display = "none";
+});
+
+ventanaComplejidad.addEventListener("click", evento => {
+    if (evento.target === ventanaComplejidad) ventanaComplejidad.style.display = "none";
 });
 
 botonBuscar.addEventListener("click", buscarTareas);
@@ -404,6 +459,7 @@ document.addEventListener("keydown", evento => {
         ventanaTarea.style.display = "none";
         ventanaSolicitud.style.display = "none";
         ventanaHistorial.style.display = "none";
+        ventanaComplejidad.style.display = "none";
         ventanaSolicitudes.style.display = "none";
         menuMesaAyuda.classList.remove("mostrar");
         menuHistorial.classList.remove("mostrar");
