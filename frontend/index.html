@@ -13,15 +13,20 @@
         <span class="logo-titulo">TaskFlow</span>
     </div>
     
-    <!-- Botón de menú para el historial de tareas completadas -->
-    <div class="acciones-cabecera">
+    <!-- Botón hamburguesa principal para pantallas < 1000px -->
+    <button id="botonMenuPrincipal" class="boton-menu-principal" aria-label="Abrir menú de navegación" aria-expanded="false">☰</button>
+
+    <!-- Contenedor de acciones que se colapsará -->
+    <div id="accionesCabecera" class="acciones-cabecera">
+        <!-- Botón de menú para el historial de tareas completadas -->
         <div class="desplegable-historial">
-            <button id="botonMenuHistorial" class="boton-menu-historial" aria-label="Abrir menú" aria-expanded="false">☰</button>
+            <button id="botonMenuHistorial" class="boton-menu-historial" aria-label="Abrir menú" aria-expanded="false">Historial ▾</button>
             <div id="menuHistorial" class="menu-desplegable menu-historial">
                 <button id="botonAbrirHistorial" class="boton-accion">Historial de completadas</button>
                 <button id="botonDeshacer" class="boton-accion">Deshacer última completada</button>
             </div>
         </div>
+
         <!-- Botón de menú para la mesa de ayuda -->
         <div class="desplegable-ayuda">
             <button id="botonMesaAyuda" class="boton-accion boton-mesa-ayuda">Mesa de ayuda ▾</button>

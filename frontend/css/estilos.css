@@ -91,6 +91,8 @@ body {
 
     cursor: pointer;
     font-size: 15px;
+
+    transition: all 0.3s;
 }
 
 .buscador button:hover {
@@ -153,7 +155,7 @@ body {
     border: none;
     height: 48px;              
     padding: 0 18px;
-    font-size: 15px;
+    font-size: 0.8rem;
     font-weight: bold;
     cursor: pointer;
     white-space: nowrap;       
@@ -470,9 +472,12 @@ body {
 .boton-accion {
     background: #2b7a4b;
     color: white;
+    transition: all 0.3s;
 }
 
-.boton-accion:hover { background: #555; }
+.boton-accion:hover { 
+    background-color: #22613b; 
+}
 
 .tarea-acciones {
     display: flex;
@@ -533,8 +538,15 @@ body {
 /* Menú de tres rayitas para el historial de la pila */
 .desplegable-historial { position: relative; }
 .boton-menu-historial {
-    width: 48px; height: 48px; border: 0; border-radius: 6px;
-    background: #222; color: #fff; font-size: 25px; cursor: pointer;
+    width: 48px; height: 48px; 
+    border: 0; 
+    border-radius: 6px;
+    background: #222; 
+    color: #fff; 
+    font-size: 25px; 
+    cursor: pointer;
+    padding-bottom: 3px;
+    transition: all 0.3s;
 }
 .boton-menu-historial:hover { background: #3a3a3a; }
 .menu-historial { left: 0; right: auto; min-width: 230px; }
@@ -564,4 +576,136 @@ body {
 }
 #listaSolicitudes .item-historial:first-child {
     border-left: 4px solid #2b7a4b;
+}
+
+
+@media (max-width: 1366px) {
+
+    .logo {
+        img {
+            width: 5rem;
+            height: 5rem;
+            aspect-ratio: 1;
+        }
+
+        span {
+            font-size: 1.5rem;
+        }
+    }
+    
+    .contenedor {
+        margin: 1rem auto;
+    }
+
+    .panel-tareas {
+        padding: 2rem 1rem;
+    }
+}
+
+
+@media (max-width: 900px) {
+
+    .tarea {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 450px) {
+    .tarea-acciones {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        width: 100%;
+
+        div {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+        }
+    }
+}
+
+/* Estilos temporales */
+
+/* Ocultar el botón hamburguesa principal en pantallas grandes */
+.boton-menu-principal {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: inherit;
+}
+
+/* Estilos específicos cuando la pantalla es menor a 1000px */
+@media (max-width: 1000px) {
+    .encabezado {
+        position: relative;
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+
+    /* Mostrar el botón hamburguesa principal */
+    .boton-menu-principal {
+        display: block;
+    }
+
+    .boton-menu-historial,
+    .boton-accion,
+    .boton-agregar-tarea,
+    #botonBuscar {
+        display: flex;
+        justify-content: center;
+        align-content: center;
+        font-size: 1rem;
+        font-weight: bold;
+    }
+
+    .menu-desplegable {
+        align-self: center ;
+    }
+
+
+    #botonBuscar {
+        height: 48px;
+    }
+
+    /* Ocultar el contenedor de acciones por defecto en móvil */
+    .acciones-cabecera {
+        position: absolute;
+        display: none;
+        top:100%;
+        left: 0;
+        width: 100%;
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        background-color: #ffffff; /* Ajustalo según el color de fondo de tu header */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 1rem;
+        margin-top: 1rem;
+        gap: 0.8rem;
+        border-radius: 8px;
+    }
+
+    /* Clase que activará JavaScript para mostrar el menú colapsado */
+    .acciones-cabecera.mostrar-menu {
+        display: flex;
+    }
+
+    /* Ajustar elementos internos para que ocupen todo el ancho en móviles */
+    .acciones-cabecera > div,
+    .acciones-cabecera button,
+    .buscador {
+        width: 100% !important;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .buscador input {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
 }

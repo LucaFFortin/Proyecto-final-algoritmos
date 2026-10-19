@@ -40,6 +40,10 @@ const menuHistorial = document.getElementById("menuHistorial");
 const ventanaHistorial = document.getElementById("ventanaHistorial");
 const listaHistorial = document.getElementById("listaHistorial");
 
+// menu responsive
+const botonMenuPrincipal = document.getElementById("botonMenuPrincipal");
+const accionesCabecera = document.getElementById("accionesCabecera");
+
 function obtenerTextoPrioridad(prioridad) {
     if (Number(prioridad) === 1) return "Alta";
     if (Number(prioridad) === 3) return "Baja";
@@ -78,14 +82,18 @@ function mostrarTareas() {
         elemento.innerHTML = `
             <div class="tarea-info">
                 <h2>${tarea.titulo}</h2>
-                <p><strong>ID:</strong> ${tarea.id} | <strong>Prioridad:</strong> ${obtenerTextoPrioridad(tarea.prioridad)} | <strong>Complejidad:</strong> ${tarea.complejidad}</p>
+                <p><strong>ID:</strong> ${tarea.id} </p>
+                <p><strong>Prioridad:</strong> ${obtenerTextoPrioridad(tarea.prioridad)}</p> 
+                <p><strong>Complejidad:</strong> ${tarea.complejidad}</p>
             </div>
             <div class="tarea-acciones">
                 <button class="estado estado-clickeable ${obtenerClaseEstado(tarea.estado)}"
                         data-id="${tarea.id}" aria-label="Cambiar estado de la tarea"
                         title="Hacé clic para cambiar entre Pendiente y En Progreso">${obtenerTextoEstado(tarea.estado)}</button>
-                <button class="boton-completar" data-id="${tarea.id}">Completar</button>
-                <button class="boton-eliminar" data-id="${tarea.id}">Eliminar</button>
+                <div>
+                    <button class="boton-completar" data-id="${tarea.id}">Completar</button>
+                    <button class="boton-eliminar" data-id="${tarea.id}">Eliminar</button>
+                </div>
             </div>
         `;
         listaTareas.appendChild(elemento);
@@ -241,6 +249,8 @@ formularioTarea.addEventListener("submit", evento => {
 botonMenuHistorial.addEventListener("click", evento => {
     evento.stopPropagation();
     menuHistorial.classList.toggle("mostrar");
+
+    menuMesaAyuda.classList.remove("mostrar");
     botonMenuHistorial.setAttribute("aria-expanded", menuHistorial.classList.contains("mostrar"));
 });
 
@@ -296,6 +306,8 @@ document.getElementById("botonDeshacer").addEventListener("click", () => {
 botonMesaAyuda.addEventListener("click", evento => {
     evento.stopPropagation();
     menuMesaAyuda.classList.toggle("mostrar");
+
+    menuHistorial.classList.remove("mostrar");
 });
 
 document.addEventListener("click", evento => {
@@ -465,6 +477,30 @@ document.addEventListener("keydown", evento => {
         menuHistorial.classList.remove("mostrar");
     }
 });
+
+// menu responsive
+botonMenuPrincipal.addEventListener("click", evento => {
+    evento.stopPropagation();
+    accionesCabecera.classList.toggle("mostrar-menu");
+    botonMenuPrincipal.setAttribute("aria-expanded", accionesCabecera.classList.contains("mostrar-menu"));
+});
+
+// Cerrar el menú principal si se hace clic fuera de él
+document.addEventListener("click", evento => {
+    if (!evento.target.closest(".encabezado")) {
+        accionesCabecera.classList.remove("mostrar-menu");
+        botonMenuPrincipal.setAttribute("aria-expanded", "false");
+    }
+});
+
+// Incluir el cierre del menú principal al presionar la tecla Escape
+document.addEventListener("keydown", evento => {
+    if (evento.key === "Escape") {
+        accionesCabecera.classList.remove("mostrar-menu");
+        botonMenuPrincipal.setAttribute("aria-expanded", "false");
+    }
+});
+
 // carga las tareas y solicitudes desde el servidor al iniciar la aplicación
 cargarTareasDesdeServidor();
 cargarSolicitudes();
