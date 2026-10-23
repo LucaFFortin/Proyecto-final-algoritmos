@@ -61,7 +61,7 @@ def obtener_tareas(): # Recupera todas las tareas guardadas.Lista de tareas
     filas = cursor.fetchall()
 
     conexion.close()
-    
+
     return filas
 
 
@@ -195,4 +195,20 @@ def obtener_solicitudes_pendientes(): # Esta función permite reconstruir la col
     filas = cursor.fetchall()
     conexion.close()
 
+    return filas
+
+def obtener_solicitudes_atendidas(): # Historial de solicitudes de mesa de ayuda
+    """Obtiene las solicitudes que ya fueron atendidas, de la más antigua a la más nueva."""
+    conexion = conectar()
+    cursor = conexion.cursor()
+
+    cursor.execute("""
+        SELECT id, descripcion, prioridad, estado
+        FROM solicitudes
+        WHERE estado = 'Atendida'
+        ORDER BY id ASC
+    """)
+
+    filas = cursor.fetchall()
+    conexion.close()
     return filas
