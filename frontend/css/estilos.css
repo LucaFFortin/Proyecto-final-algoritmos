@@ -91,8 +91,6 @@ body {
 
     cursor: pointer;
     font-size: 15px;
-
-    transition: all 0.3s;
 }
 
 .buscador button:hover {
@@ -155,7 +153,7 @@ body {
     border: none;
     height: 48px;              
     padding: 0 18px;
-    font-size: 0.8rem;
+    font-size: 15px;
     font-weight: bold;
     cursor: pointer;
     white-space: nowrap;       
@@ -472,12 +470,9 @@ body {
 .boton-accion {
     background: #2b7a4b;
     color: white;
-    transition: all 0.3s;
 }
 
-.boton-accion:hover { 
-    background-color: #22613b; 
-}
+.boton-accion:hover { background: #555; }
 
 .tarea-acciones {
     display: flex;
@@ -538,15 +533,11 @@ body {
 /* Menú de tres rayitas para el historial de la pila */
 .desplegable-historial { position: relative; }
 .boton-menu-historial {
-    width: 48px; height: 48px; 
-    border: 0; 
-    border-radius: 6px;
-    background: #222; 
-    color: #fff; 
-    font-size: 25px; 
-    cursor: pointer;
-    padding-bottom: 3px;
-    transition: all 0.3s;
+    width: 48px; min-width: 48px; height: 48px; flex: 0 0 48px;
+    border: 0; border-radius: 6px;
+    background: #222; color: #fff; font-size: 25px; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-direction: row; white-space: nowrap;
 }
 .boton-menu-historial:hover { background: #3a3a3a; }
 .menu-historial { left: 0; right: auto; min-width: 230px; }
@@ -577,6 +568,8 @@ body {
 #listaSolicitudes .item-historial:first-child {
     border-left: 4px solid #2b7a4b;
 }
+
+
 
 
 @media (max-width: 1366px) {
@@ -697,15 +690,46 @@ body {
 
     /* Ajustar elementos internos para que ocupen todo el ancho en móviles */
     .acciones-cabecera > div,
-    .acciones-cabecera button,
+    .acciones-cabecera button:not(.boton-menu-historial),
     .buscador {
         width: 100% !important;
         display: flex;
         flex-direction: column;
     }
 
+    /* El botón del historial conserva su tamaño y muestra solo el icono. */
+    .acciones-cabecera .boton-menu-historial {
+        width: 48px !important;
+        min-width: 48px;
+        height: 48px;
+        flex: 0 0 48px;
+        flex-direction: row;
+        align-self: flex-start;
+    }
+
     .buscador input {
         width: 100%;
         margin-bottom: 0.5rem;
     }
+}
+
+/* Controles para pasar de una página de solicitudes a otra. */
+.paginado {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.paginado button {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.paginado button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
