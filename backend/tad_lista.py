@@ -66,41 +66,20 @@ def insertar(lista, dato):
 
     lista.tamanio += 1
 
+
 def insertar_por_prioridad(lista, dato):
     """Inserta el dato pasado en la lista."""
     nodo = nodoLista()
     nodo.info = dato
 
-    if (lista.inicio is None) or (lista.inicio.info["prioridad"] > dato["prioridad"]): # puse solamente para que compare por priodad ya que uso diccionarios no me deja
+    if (lista.inicio is None) or (lista.inicio.info["prioridad"] >= dato["prioridad"]): # puse solamente para que compare por priodad ya que uso diccionarios no me deja
         nodo.sig = lista.inicio
         lista.inicio = nodo
     else:
         ant = lista.inicio
         act = lista.inicio.sig
 
-        while (act is not None and act.info["prioridad"] < dato["prioridad"]):
-            ant = ant.sig
-            act = act.sig
-
-        nodo.sig = act
-        ant.sig = nodo
-
-    lista.tamanio += 1
-
-def insertar_por_id(lista, dato):
-    """Inserta el dato pasado en la lista."""
-    nodo = nodoLista()
-    nodo.info = dato
-    print(lista.inicio.info["id_tarea"] if lista.inicio is not None else "none", "dato:", dato["id_tarea"])
-    print("".join(c for c in dato["id_tarea"] if c.isdigit()))
-    if (lista.inicio is None) or (int(float("".join(c for c in lista.inicio.info["id_tarea"] if c.isdigit()))) > int(float("".join(c for c in dato["id_tarea"] if c.isdigit())))):
-        nodo.sig = lista.inicio
-        lista.inicio = nodo
-    else:
-        ant = lista.inicio
-        act = lista.inicio.sig
-
-        while (act is not None and int(float("".join(c for c in act.info["id_tarea"] if c.isdigit()))) < int(float("".join(c for c in dato["id_tarea"] if c.isdigit())))):
+        while (act is not None and act.info["prioridad"] <= dato["prioridad"]):
             ant = ant.sig
             act = act.sig
 
