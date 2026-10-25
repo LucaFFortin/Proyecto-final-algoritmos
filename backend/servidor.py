@@ -40,7 +40,7 @@ class ManejadorTareas(BaseHTTPRequestHandler):
 
         elif ruta.path == "/api/solicitudes/atendidas": # para consultar solicitudes ya atendidas
             solicitudes = [
-                {"id_solicitud": id_solicitud, "descripcion": descripcion, "prioridad": prioridad, "estado": estado}
+                {"id_solicitud": id_solicitud, "descripcion": descripcion, "prioridad": prioridad, "estado": estado}  # A REVISAR 
                 for id_solicitud, descripcion, prioridad, estado in conexion.obtener_solicitudes_atendidas()
             ]
             responder(self, 200, solicitudes)
