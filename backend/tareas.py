@@ -227,6 +227,27 @@ def obtener_solicitudes(cola_soporte):
     return resultado
 
 
+def enviar_tarea_a_mesa_ayuda(lista_tareas, cola_soporte, id_tarea, id_solicitud):
+    """Busca una tarea en la lista y la convierte en solicitud."""
+
+    actual = lista_tareas.inicio
+
+    while actual is not None:
+        tarea = actual.info
+
+        if tarea["id_tarea"] == id_tarea:
+            return agregar_solicitud(
+                cola_soporte,
+                id_solicitud,
+                tarea["descripcion"],
+                tarea["prioridad"],
+                "Pendiente"
+            )
+
+        actual = actual.sig
+
+    return None
+
 
 # Arboles 
 # Tarea más compleja y menos compleja lo va a ir ordenando en la lista de tareas / se tiene que pasar al mismo tiempo de lista al arbol
@@ -302,5 +323,5 @@ def obtener_complejidad():
         "mayor": tarea_mas_compleja(raiz)
     }
 
-
+# abria que poner la logica de lista y que la cola agarre la ID de esta tarea en especifico 
 
