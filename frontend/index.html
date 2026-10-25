@@ -92,6 +92,45 @@
     </div>
 </div>
 
+<!-- Ventana para editar una tarea -->
+<div id="ventanaEditarTarea" class="ventana-fondo">
+    <div class="ventana-caja">
+        <h2>Editar tarea</h2>
+        <p>Modificá los datos de la tarea seleccionada.</p>
+        <form id="formularioEditarTarea">
+            <div class="campo">
+                <label for="inputDescripcionEdicion">Descripción:</label>
+                <input type="text" id="inputDescripcionEdicion" required>
+            </div>
+            <div class="fila-campos">
+                <div class="campo">
+                    <label for="inputPrioridadEdicion">Prioridad:</label>
+                    <select id="inputPrioridadEdicion">
+                        <option value="1">Alta</option>
+                        <option value="2">Media</option>
+                        <option value="3">Baja</option>
+                    </select>
+                </div>
+                <div class="campo">
+                    <label for="inputComplejidadEdicion">Complejidad (1-10):</label>
+                    <input type="number" id="inputComplejidadEdicion" min="1" max="10" required>
+                </div>
+            </div>
+            <div class="campo">
+                <label for="inputEstadoEdicion">Estado:</label>
+                <select id="inputEstadoEdicion">
+                    <option value="pendiente">Pendiente</option>
+                    <option value="en progreso">En Progreso</option>
+                </select>
+            </div>
+            <div class="ventana-botones">
+                <button type="button" id="botonCancelarEdicion" class="boton-cancelar">Cancelar</button>
+                <button type="submit" class="boton-guardar">Guardar cambios</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- Ventana de historial de tareas completadas -->
 <div id="ventanaHistorial" class="ventana-fondo">
     <div class="ventana-caja ventana-historial-caja">

@@ -28,6 +28,13 @@ const formularioTarea = document.getElementById("formularioTarea");
 const inputDescripcion = document.getElementById("inputDescripcion");
 const inputPrioridad = document.getElementById("inputPrioridad");
 const inputComplejidad = document.getElementById("inputComplejidad");
+const ventanaEditarTarea = document.getElementById("ventanaEditarTarea");
+const formularioEditarTarea = document.getElementById("formularioEditarTarea");
+const inputDescripcionEdicion = document.getElementById("inputDescripcionEdicion");
+const inputPrioridadEdicion = document.getElementById("inputPrioridadEdicion");
+const inputComplejidadEdicion = document.getElementById("inputComplejidadEdicion");
+const inputEstadoEdicion = document.getElementById("inputEstadoEdicion");
+let tareaEnEdicion = null;
 
 const ventanaSolicitud = document.getElementById("ventanaSolicitud");
 const formularioSolicitud = document.getElementById("formularioSolicitud");
@@ -79,9 +86,10 @@ function mostrarTareas() {
     tareasDeLaPagina.forEach(tarea => {
         const elemento = document.createElement("article");
         elemento.classList.add("tarea");
+        const titulo = document.createElement("h2");
+        titulo.textContent = tarea.titulo;
         elemento.innerHTML = `
             <div class="tarea-info">
-                <h2>${tarea.titulo}</h2>
                 <p><strong>ID:</strong> ${tarea.id} </p>
                 <p><strong>Prioridad:</strong> ${obtenerTextoPrioridad(tarea.prioridad)}</p> 
                 <p><strong>Complejidad:</strong> ${tarea.complejidad}</p>
@@ -91,11 +99,13 @@ function mostrarTareas() {
                         data-id="${tarea.id}" aria-label="Cambiar estado de la tarea"
                         title="Hacé clic para cambiar entre Pendiente y En Progreso">${obtenerTextoEstado(tarea.estado)}</button>
                 <div>
+                    <button type="button" class="boton-editar" data-id="${tarea.id}">Editar</button>
                     <button class="boton-completar" data-id="${tarea.id}">Completar</button>
                     <button class="boton-eliminar" data-id="${tarea.id}">Eliminar</button>
                 </div>
             </div>
         `;
+        elemento.querySelector(".tarea-info").prepend(titulo);
         listaTareas.appendChild(elemento);
     });
 
@@ -109,6 +119,13 @@ function mostrarTareas() {
         boton.addEventListener("click", () => eliminarTarea(boton.dataset.id));
     });
 }
+
+listaTareas.addEventListener("click", evento => {
+    const botonEditar = evento.target.closest(".boton-editar");
+    if (botonEditar && listaTareas.contains(botonEditar)) {
+        abrirEdicionTarea(botonEditar.dataset.id);
+    }
+});
 
 // crea la paginación según la cantidad de tareas filtradas
 
@@ -169,7 +186,7 @@ function cambiarEstadoTarea(id) {
     const tarea = tareas.find(t => t.id === id);
     if (!tarea) return;
 
-    const estadoActual = (tarea.estado || "pendiente").toLowerCase();
+    const estadoActual = `${(tarea.estado || "pendiente")}`.toLowerCase();
     const nuevoEstado = estadoActual === "en progreso" ? "pendiente" : "en progreso";
 
     fetch("http://localhost:8000/api/tareas/estado", {
@@ -208,6 +225,56 @@ function eliminarTarea(id) {
         .then(() => cargarTareasDesdeServidor())
         .catch(() => alert("No se pudo eliminar la tarea."));
 }
+
+function abrirEdicionTarea(id) {
+    tareaEnEdicion = tareas.find(tarea => String(tarea.id) === String(id));
+    if (!tareaEnEdicion) {
+        alert("No se encontró la tarea para editar. Actualizá la lista e intentá nuevamente.");
+        return;
+    }
+
+    inputDescripcionEdicion.value = tareaEnEdicion.titulo;
+    inputPrioridadEdicion.value = tareaEnEdicion.prioridad;
+    inputComplejidadEdicion.value = tareaEnEdicion.complejidad;
+    inputEstadoEdicion.value = (tareaEnEdicion.estado || "pendiente").toLowerCase();
+    ventanaEditarTarea.classList.add("abierta");
+    inputDescripcionEdicion.focus();
+}
+
+function cerrarEdicionTarea() {
+    formularioEditarTarea.reset();
+    ventanaEditarTarea.classList.remove("abierta");
+    tareaEnEdicion = null;
+}
+
+document.getElementById("botonCancelarEdicion").addEventListener("click", cerrarEdicionTarea);
+ventanaEditarTarea.addEventListener("click", evento => {
+    if (evento.target === ventanaEditarTarea) cerrarEdicionTarea();
+});
+
+formularioEditarTarea.addEventListener("submit", evento => {
+    evento.preventDefault();
+    if (!tareaEnEdicion) return;
+
+    fetch("http://localhost:8000/api/tareas/editar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            id: tareaEnEdicion.id,
+            descripcion: inputDescripcionEdicion.value.trim(),
+            prioridad: Number(inputPrioridadEdicion.value),
+            complejidad: Number(inputComplejidadEdicion.value),
+            estado: inputEstadoEdicion.value
+        })
+    })
+        .then(respuesta => respuesta.json().then(datos => ({ ok: respuesta.ok, datos })))
+        .then(({ ok, datos }) => {
+            if (!ok) throw new Error(datos.mensaje || "No se pudo actualizar la tarea.");
+            cerrarEdicionTarea();
+            cargarTareasDesdeServidor();
+        })
+        .catch(error => alert(error.message || "No se pudo actualizar la tarea."));
+});
 
 botonNuevaTarea.addEventListener("click", () => {
     ventanaTarea.style.display = "flex";
@@ -375,13 +442,18 @@ ventanaSolicitudes.addEventListener("click", evento => {
 });
 
 // Atiende y retira de la cola únicamente la solicitud que está al frente.
+function actualizarUITrasAtenderSolicitud(solicitud) {
+    mensajeSolicitudes.textContent = `Solicitud ${solicitud.id_solicitud} atendida y convertida en tarea: ${solicitud.descripcion}`;
+    cargarTareasDesdeServidor();
+    cargarSolicitudes();
+}
+
 document.getElementById("botonAtenderSolicitud").addEventListener("click", () => {
     fetch("http://localhost:8000/api/solicitudes/atender", { method: "POST" })
         .then(r => r.json().then(datos => ({ ok: r.ok, datos })))
         .then(({ ok, datos }) => {
             if (!ok) throw new Error(datos.mensaje || "No se pudo atender la solicitud.");
-            mensajeSolicitudes.textContent = `Solicitud ${datos.id_solicitud} atendida: ${datos.descripcion}`;
-            cargarSolicitudes();
+            actualizarUITrasAtenderSolicitud(datos);
         })
         .catch(error => {
             mensajeSolicitudes.textContent = error.message;
@@ -469,6 +541,7 @@ inputBuscar.addEventListener("keydown", evento => {
 document.addEventListener("keydown", evento => {
     if (evento.key === "Escape") {
         ventanaTarea.style.display = "none";
+        cerrarEdicionTarea();
         ventanaSolicitud.style.display = "none";
         ventanaHistorial.style.display = "none";
         ventanaComplejidad.style.display = "none";

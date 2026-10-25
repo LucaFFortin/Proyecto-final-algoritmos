@@ -126,6 +126,24 @@ def actualizar_estado_tarea(lista_tareas, id, estado):
     return None
 
 
+def editar_tarea(lista_tareas, id, descripcion, prioridad, complejidad, estado):
+    """Actualiza todos los datos editables de una tarea operativa."""
+    actual = lista_tareas.inicio
+
+    while actual is not None:
+        if actual.info["id_tarea"] == id:
+            actual.info.update({
+                "descripcion": descripcion,
+                "prioridad": prioridad,
+                "complejidad": complejidad,
+                "estado": estado,
+            })
+            return actual.info
+        actual = actual.sig
+
+    return None
+
+
 def eliminar_id(lista_tareas, id): 
     """
     Busca y elimina una tarea de la lista enlazada utilizando su ID único.
@@ -430,6 +448,5 @@ def obtener_complejidad():
         "menor": tarea_menos_compleja(raiz),
         "mayor": tarea_mas_compleja(raiz)
     }
-
 
 

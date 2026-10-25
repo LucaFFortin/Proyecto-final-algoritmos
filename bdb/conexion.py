@@ -92,6 +92,22 @@ def actualizar_estado_tarea(id_bd, estado): # Lista y operación de deshacer par
     conexion.close()
 
 
+def actualizar_tarea(id_bd, descripcion, prioridad, complejidad, estado):
+    """Actualiza los datos de una tarea y devuelve si existía en la base."""
+    bd = conectar()
+    try:
+        cursor = bd.cursor()
+        cursor.execute("""
+            UPDATE tareas
+            SET descripcion = ?, prioridad = ?, complejidad = ?, estado = ?
+            WHERE id = ?
+        """, (descripcion, prioridad, complejidad, estado, id_bd))
+        bd.commit()
+        return cursor.rowcount > 0
+    finally:
+        bd.close()
+
+
 def modificar_tarea(id,descripcion,prioridad, complejidad, estado): # Lista de tareas
     """Modifica una tarea de la tabla tareas."""
 

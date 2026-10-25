@@ -59,7 +59,7 @@ class ManejadorTareas(BaseHTTPRequestHandler):
         elif ruta.path == "/api/solicitudes": # para obtener solicitudes cola
             responder(self, 200, tareas.obtener_solicitudes(tareas.cola_soporte))
 
-        elif ruta.path == "/api/complejidad": # para la complejidad filtro  ARBOLES FALTA HACERLO en tareas.py
+        elif ruta.path == "/api/complejidad": # para la complejidad filtro ARBOL
             responder(self, 200, tareas.obtener_complejidad())
 
         else:
@@ -116,6 +116,67 @@ class ManejadorTareas(BaseHTTPRequestHandler):
             conexion.actualizar_estado_tarea(id_bd, nuevo_estado)
             responder(self, 200, {"mensaje": "Estado actualizado.", "estado": nuevo_estado})
 
+        elif ruta.path == "/api/tareas/editar":
+            id_tarea = datos.get("id")
+            if not isinstance(id_tarea, str) or not id_tarea.startswith("tarea") or not id_tarea[5:].isdigit():
+                responder(self, 400, {"mensaje": "El ID de la tarea no es válido."})
+                return
+
+            descripcion = datos.get("descripcion", "")
+            if not isinstance(descripcion, str) or descripcion.strip() == "":
+                responder(self, 400, {"mensaje": "La descripción es obligatoria."})
+                return
+            descripcion = descripcion.strip()
+
+            prioridad_dato = datos.get("prioridad")
+            complejidad_dato = datos.get("complejidad")
+            try:
+                prioridad = int(prioridad_dato)
+                complejidad = int(complejidad_dato)
+            except (TypeError, ValueError):
+                responder(self, 400, {"mensaje": "La prioridad y la complejidad deben ser números enteros."})
+                return
+
+            if (
+                isinstance(prioridad_dato, bool)
+                or isinstance(complejidad_dato, bool)
+                or (isinstance(prioridad_dato, float) and not prioridad_dato.is_integer())
+                or (isinstance(complejidad_dato, float) and not complejidad_dato.is_integer())
+            ):
+                responder(self, 400, {"mensaje": "La prioridad y la complejidad deben ser números enteros."})
+                return
+
+            if prioridad not in (1, 2, 3):
+                responder(self, 400, {"mensaje": "La prioridad debe ser 1, 2 o 3."})
+                return
+            if complejidad < 1 or complejidad > 10:
+                responder(self, 400, {"mensaje": "La complejidad debe estar entre 1 y 10."})
+                return
+
+            estado = str(datos.get("estado", "")).strip().lower()
+            if estado not in ("pendiente", "en progreso"):
+                responder(self, 400, {"mensaje": "El estado debe ser Pendiente o En Progreso."})
+                return
+
+            tarea = next(
+                (item for item in tareas.obtener_todas_las_tareas(tareas.lista_tareas)
+                 if item["id_tarea"] == id_tarea),
+                None
+            )
+            if tarea is None:
+                responder(self, 404, {"mensaje": "No se encontró la tarea activa."})
+                return
+
+            id_bd = int(id_tarea[5:])
+            if not conexion.actualizar_tarea(id_bd, descripcion, prioridad, complejidad, estado):
+                responder(self, 404, {"mensaje": "No se encontró la tarea en la base de datos."})
+                return
+
+            tarea_actualizada = tareas.editar_tarea(
+                tareas.lista_tareas, id_tarea, descripcion, prioridad, complejidad, estado
+            )
+            responder(self, 200, {"mensaje": "Tarea actualizada.", "tarea": tarea_actualizada})
+
         elif ruta.path == "/api/tareas/completar": # para completar la tarea lista 
             id_tarea = datos.get("id")
             tarea = tareas.completar_tarea(tareas.lista_tareas, tareas.pila_historial, id_tarea)
@@ -145,7 +206,7 @@ class ManejadorTareas(BaseHTTPRequestHandler):
                 return
 
             id_bd = conexion.guardar_solicitud(descripcion, prioridad, "Pendiente")
-            solicitud = {"id_solicitud": id_bd, "descripcion": descripcion, "prioridad": prioridad, "estado": "Pendiente"}
+            solicitud = {"id_solicitud": f"tarea{id_bd}", "descripcion": descripcion, "prioridad": prioridad, "estado": "Pendiente"}
             tareas.agregar_solicitud(tareas.cola_soporte, id_bd, descripcion, prioridad, "Pendiente")
             responder(self, 201, {"mensaje": "Solicitud registrada.", "id": id_bd})
 
@@ -156,7 +217,15 @@ class ManejadorTareas(BaseHTTPRequestHandler):
 
             solicitud = tareas.atender_solicitud(tareas.cola_soporte)
             conexion.actualizar_estado_solicitud(solicitud["id_solicitud"], "Atendida")
-            solicitud["estado"] = "Atendida"
+            # solicitud["estado"] = "Atendida"
+            print(solicitud, "solicitud en el servidor")
+
+            solicitud["complejidad"] = 1
+            id_bd = conexion.guardar_tarea(solicitud["descripcion"], solicitud["prioridad"] or "baja", solicitud["complejidad"], solicitud["estado"])
+
+            # solicitud["id_tarea"] = str(solicitud.pop("id_solicitud"))
+            tareas.agregar_tarea(tareas.lista_tareas, f"tarea{id_bd}", solicitud["descripcion"], solicitud["prioridad"] or "baja", solicitud["estado"], solicitud["complejidad"])
+
             responder(self, 200, solicitud)
 
         else:

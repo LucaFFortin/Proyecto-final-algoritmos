@@ -366,6 +366,11 @@ body {
     justify-content: center;
 }
 
+.ventana-fondo.abierta {
+    display: flex;
+    z-index: 1100;
+}
+
 /* El recuadro del ventana */
 .ventana-caja {
     background-color: #222222; 
@@ -475,6 +480,19 @@ body {
     transition: all 0.3s;
 }
 
+.boton-editar {
+    background-color: #4a35c4;
+    color: white;
+    padding: 7px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: bold;
+    white-space: nowrap;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+}
+
 .boton-accion:hover { 
     background-color: #22613b; 
 }
@@ -490,6 +508,7 @@ body {
 .boton-completar { background: #2b7a4b; color: white; }
 .boton-eliminar { background: #8a3c3c; color: white; }
 .boton-completar:hover { background: #22613b; }
+.boton-editar:hover { background: #6439a8; }
 .boton-eliminar:hover { background: #a54a4a; }
 /* 
    Usado dentro de la ventana de Nueva Tarea
