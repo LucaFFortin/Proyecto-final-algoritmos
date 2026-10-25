@@ -460,7 +460,8 @@ body {
 
 .boton-accion,
 .boton-completar,
-.boton-eliminar {
+.boton-eliminar,
+.boton-ticket {
     border: none;
     padding: 10px 14px;
     cursor: pointer;
@@ -484,6 +485,10 @@ body {
 
 .boton-completar { background: #2b7a4b; color: white; }
 .boton-eliminar { background: #8a3c3c; color: white; }
+.boton-ticket { background: #315b86; color: white; border: none; padding: 10px 12px; cursor: pointer; font-weight: bold; }
+.boton-ticket:hover { background: #24466a; }
+.boton-ticket:disabled { opacity: 0.75; cursor: default; }
+.boton-ticket.ticket-creado { background: #47724f; }
 .boton-completar:hover { background: #22613b; }
 .boton-eliminar:hover { background: #a54a4a; }
 /* 
