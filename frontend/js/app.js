@@ -87,6 +87,7 @@ function mostrarTareas() {
                 <p><strong>Complejidad:</strong> ${tarea.complejidad}</p>
             </div>
             <div class="tarea-acciones">
+                <button class="boton-ticket" data-id="${tarea.id}">Enviar a mesa de ayuda</button>
                 <button class="estado estado-clickeable ${obtenerClaseEstado(tarea.estado)}"
                         data-id="${tarea.id}" aria-label="Cambiar estado de la tarea"
                         title="Hacé clic para cambiar entre Pendiente y En Progreso">${obtenerTextoEstado(tarea.estado)}</button>
@@ -99,6 +100,9 @@ function mostrarTareas() {
         listaTareas.appendChild(elemento);
     });
 
+    document.querySelectorAll(".boton-ticket").forEach(boton => {
+        boton.addEventListener("click", () => crearTicketDesdeTarea(boton.dataset.id, boton));
+    });
     document.querySelectorAll(".estado-clickeable").forEach(boton => {
         boton.addEventListener("click", () => cambiarEstadoTarea(boton.dataset.id));
     });
@@ -162,6 +166,36 @@ function cargarTareasDesdeServidor() {
             crearPaginacion();
         })
         .catch(() => console.warn("Servidor Python desconectado."));
+}
+
+// Convierte la tarea elegida en un ticket pendiente de la mesa de ayuda.
+function crearTicketDesdeTarea(id, boton) {
+    const tarea = tareas.find(t => t.id === id);
+    if (!tarea) return;
+
+    boton.disabled = true;
+    boton.textContent = "Creando ticket...";
+
+    fetch("http://localhost:8000/api/solicitudes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            descripcion: `Tarea ${tarea.id}: ${tarea.titulo}`,
+            prioridad: Number(tarea.prioridad)
+        })
+    })
+    .then(respuesta => respuesta.json().then(datos => ({ ok: respuesta.ok, datos })))
+    .then(({ ok, datos }) => {
+        if (!ok) throw new Error(datos.mensaje || "No se pudo crear el ticket.");
+        boton.textContent = "Ticket creado";
+        boton.classList.add("ticket-creado");
+        alert(`La tarea se convirtió en el ticket ${datos.id}. Podés encontrarlo en Mesa de ayuda > Solicitudes pendientes.`);
+    })
+    .catch(error => {
+        boton.disabled = false;
+        boton.textContent = "Enviar a mesa de ayuda";
+        alert(error.message || "No se pudo crear el ticket.");
+    });
 }
 
 // Alterna el estado con un clic y guarda el cambio en el servidor y SQLite.
