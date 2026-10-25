@@ -13,14 +13,14 @@
         <span class="logo-titulo">TaskFlow</span>
     </div>
     
-    <!-- Botón hamburguesa principal para pantallas < 1000px -->
+    <!-- Botón principal para pantallas < 1000px -->
     <button id="botonMenuPrincipal" class="boton-menu-principal" aria-label="Abrir menú de navegación" aria-expanded="false">☰</button>
 
     <!-- Contenedor de acciones que se colapsará -->
     <div id="accionesCabecera" class="acciones-cabecera">
         <!-- Botón de menú para el historial de tareas completadas -->
         <div class="desplegable-historial">
-            <button id="botonMenuHistorial" class="boton-menu-historial" aria-label="Abrir menú" aria-expanded="false">Historial ▾</button>
+            <button id="botonMenuHistorial" class="boton-menu-historial" aria-label="Abrir menú del historial" title="Menú del historial" aria-expanded="false">☰</button>
             <div id="menuHistorial" class="menu-desplegable menu-historial">
                 <button id="botonAbrirHistorial" class="boton-accion">Historial de completadas</button>
                 <button id="botonDeshacer" class="boton-accion">Deshacer última completada</button>
@@ -32,7 +32,8 @@
             <button id="botonMesaAyuda" class="boton-accion boton-mesa-ayuda">Mesa de ayuda ▾</button>
             <div id="menuMesaAyuda" class="menu-desplegable">
                 <button id="botonNuevaSolicitud" class="boton-accion">Registrar solicitud</button>
-                <button id="botonVerSolicitudes" class="boton-accion">Ver solicitudes</button>
+                <button id="botonVerSolicitudes" class="boton-accion">Ver solicitudes pendientes</button>
+                <button id="botonVerSolicitudesAtendidas" class="boton-accion">Ver solicitudes atendidas</button>
             </div>
         </div>
 
@@ -155,6 +156,11 @@
             <button type="button" id="botonCerrarSolicitudes" class="boton-cancelar">Cerrar</button>
         </div>
         <div id="listaSolicitudes" class="lista-historial"></div>
+        <div id="paginadoSolicitudes" class="paginado" style="display: none;">
+            <button type="button" id="paginaAnterior">Anterior</button>
+            <span id="numeroPagina">Página 1</span>
+            <button type="button" id="paginaSiguiente">Siguiente</button>
+        </div>
         <div class="ventana-botones">
             <button type="button" id="botonAtenderSolicitud" class="boton-guardar">Atender siguiente</button>
         </div>
