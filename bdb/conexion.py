@@ -61,7 +61,7 @@ def obtener_tareas(): # Recupera todas las tareas guardadas.Lista de tareas
     filas = cursor.fetchall()
 
     conexion.close()
-    
+
     return filas
 
 
@@ -92,50 +92,6 @@ def actualizar_estado_tarea(id_bd, estado): # Lista y operación de deshacer par
     conexion.close()
 
 
-def modificar_tarea(id,descripcion,prioridad, complejidad, estado): # Lista de tareas
-    """Modifica una tarea de la tabla tareas."""
-
-    conexion = conectar()
-    cursor = conexion.cursor()
-
-    tarea = obtener_tarea(id)
-
-    if tarea is None:
-        conexion.close()
-        return None
-
-    if not descripcion:
-        descripcion = tarea[1]
-
-    if not prioridad:
-        prioridad = tarea[2]
-
-    if not complejidad:
-        complejidad = tarea[3]
-
-    if not estado:
-        estado = tarea[4]
-
-    cursor.execute("""
-        UPDATE tareas
-        SET
-            descripcion = ?,
-            prioridad = ?,
-            complejidad = ?,
-            estado = ?,
-        WHERE id = ?
-    """, (
-        descripcion,
-        prioridad,
-        complejidad,
-        estado,
-        id
-    ))
-
-    conexion.commit()
-    conexion.close()
-
-    return id
 
 
 def eliminar_tarea(id): # Lista de tareas
@@ -195,4 +151,20 @@ def obtener_solicitudes_pendientes(): # Esta función permite reconstruir la col
     filas = cursor.fetchall()
     conexion.close()
 
+    return filas
+
+def obtener_solicitudes_atendidas(): # Historial de solicitudes de mesa de ayuda
+    """Obtiene las solicitudes que ya fueron atendidas, de la más antigua a la más nueva."""
+    conexion = conectar()
+    cursor = conexion.cursor()
+
+    cursor.execute("""
+        SELECT id, descripcion, prioridad, estado
+        FROM solicitudes
+        WHERE estado = 'Atendida'
+        ORDER BY id ASC
+    """)
+
+    filas = cursor.fetchall()
+    conexion.close()
     return filas
