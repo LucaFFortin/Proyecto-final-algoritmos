@@ -92,50 +92,6 @@ def actualizar_estado_tarea(id_bd, estado): # Lista y operación de deshacer par
     conexion.close()
 
 
-def modificar_tarea(id,descripcion,prioridad, complejidad, estado): # Lista de tareas
-    """Modifica una tarea de la tabla tareas."""
-
-    conexion = conectar()
-    cursor = conexion.cursor()
-
-    tarea = obtener_tarea(id)
-
-    if tarea is None:
-        conexion.close()
-        return None
-
-    if not descripcion:
-        descripcion = tarea[1]
-
-    if not prioridad:
-        prioridad = tarea[2]
-
-    if not complejidad:
-        complejidad = tarea[3]
-
-    if not estado:
-        estado = tarea[4]
-
-    cursor.execute("""
-        UPDATE tareas
-        SET
-            descripcion = ?,
-            prioridad = ?,
-            complejidad = ?,
-            estado = ?,
-        WHERE id = ?
-    """, (
-        descripcion,
-        prioridad,
-        complejidad,
-        estado,
-        id
-    ))
-
-    conexion.commit()
-    conexion.close()
-
-    return id
 
 
 def eliminar_tarea(id): # Lista de tareas
