@@ -12,3 +12,5 @@ CREATE TABLE IF NOT EXISTS solicitudes (
     prioridad INTEGER NOT NULL DEFAULT 2,
     estado TEXT NOT NULL DEFAULT 'Pendiente'
 );
+
+

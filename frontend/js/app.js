@@ -87,6 +87,7 @@ function mostrarTareas() {
                 <p><strong>Complejidad:</strong> ${tarea.complejidad}</p>
             </div>
             <div class="tarea-acciones">
+                <button class="boton-ticket" data-id="${tarea.id}">Enviar a mesa de ayuda</button>
                 <button class="estado estado-clickeable ${obtenerClaseEstado(tarea.estado)}"
                         data-id="${tarea.id}" aria-label="Cambiar estado de la tarea"
                         title="Hacé clic para cambiar entre Pendiente y En Progreso">${obtenerTextoEstado(tarea.estado)}</button>
@@ -99,6 +100,9 @@ function mostrarTareas() {
         listaTareas.appendChild(elemento);
     });
 
+    document.querySelectorAll(".boton-ticket").forEach(boton => {
+        boton.addEventListener("click", () => crearTicketDesdeTarea(boton.dataset.id, boton));
+    });
     document.querySelectorAll(".estado-clickeable").forEach(boton => {
         boton.addEventListener("click", () => cambiarEstadoTarea(boton.dataset.id));
     });
@@ -162,6 +166,36 @@ function cargarTareasDesdeServidor() {
             crearPaginacion();
         })
         .catch(() => console.warn("Servidor Python desconectado."));
+}
+
+// Convierte la tarea elegida en un ticket pendiente de la mesa de ayuda.
+function crearTicketDesdeTarea(id, boton) {
+    const tarea = tareas.find(t => t.id === id);
+    if (!tarea) return;
+
+    boton.disabled = true;
+    boton.textContent = "Creando ticket...";
+
+    fetch("http://localhost:8000/api/solicitudes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            descripcion: `Tarea ${tarea.id}: ${tarea.titulo}`,
+            prioridad: Number(tarea.prioridad)
+        })
+    })
+    .then(respuesta => respuesta.json().then(datos => ({ ok: respuesta.ok, datos })))
+    .then(({ ok, datos }) => {
+        if (!ok) throw new Error(datos.mensaje || "No se pudo crear el ticket.");
+        boton.textContent = "Ticket creado";
+        boton.classList.add("ticket-creado");
+        alert(`La tarea se convirtió en el ticket ${datos.id}. Podés encontrarlo en Mesa de ayuda > Solicitudes pendientes.`);
+    })
+    .catch(error => {
+        boton.disabled = false;
+        boton.textContent = "Enviar a mesa de ayuda";
+        alert(error.message || "No se pudo crear el ticket.");
+    });
 }
 
 // Alterna el estado con un clic y guarda el cambio en el servidor y SQLite.
@@ -354,16 +388,51 @@ formularioSolicitud.addEventListener("submit", evento => {
     })
     .catch(error => alert(error.message || "No se pudo registrar la solicitud."));
 });
-// Abrir la ventana de solicitudes; el botón de atender queda dentro de esta ventana.
+// Variables para paginar las solicitudes: mostramos 6 por página.
 const ventanaSolicitudes = document.getElementById("ventanaSolicitudes");
 const listaSolicitudes = document.getElementById("listaSolicitudes");
 const mensajeSolicitudes = document.getElementById("mensajeSolicitudes");
+const solicitudesPorPagina = 6;
+let paginaSolicitudesActual = 1;
+let solicitudesMostradas = [];
+let tipoSolicitudes = "pendientes";
+
+// Cambia de página sin volver a consultar el servidor.
+document.getElementById("paginaAnterior").addEventListener("click", () => {
+    if (paginaSolicitudesActual > 1) {
+        paginaSolicitudesActual--;
+        mostrarPaginaSolicitudes();
+    }
+});
+
+document.getElementById("paginaSiguiente").addEventListener("click", () => {
+    const totalPaginas = Math.ceil(solicitudesMostradas.length / solicitudesPorPagina);
+    if (paginaSolicitudesActual < totalPaginas) {
+        paginaSolicitudesActual++;
+        mostrarPaginaSolicitudes();
+    }
+});
 
 document.getElementById("botonVerSolicitudes").addEventListener("click", () => {
     menuMesaAyuda.classList.remove("mostrar");
     ventanaSolicitudes.style.display = "flex";
     mensajeSolicitudes.textContent = "";
+    document.querySelector("#ventanaSolicitudes h2").textContent = "Solicitudes de mesa de ayuda";
+    document.querySelector("#ventanaSolicitudes .cabecera-historial p").textContent = "Se atienden en orden de llegada (primero en entrar, primero en salir).";
+    document.getElementById("botonAtenderSolicitud").style.display = "";
+    tipoSolicitudes = "pendientes";
     cargarSolicitudes();
+});
+
+document.getElementById("botonVerSolicitudesAtendidas").addEventListener("click", () => {
+    menuMesaAyuda.classList.remove("mostrar");
+    ventanaSolicitudes.style.display = "flex";
+    mensajeSolicitudes.textContent = "";
+    document.querySelector("#ventanaSolicitudes h2").textContent = "Solicitudes atendidas";
+    document.querySelector("#ventanaSolicitudes .cabecera-historial p").textContent = "Historial de solicitudes que ya fueron atendidas.";
+    document.getElementById("botonAtenderSolicitud").style.display = "none";
+    tipoSolicitudes = "atendidas";
+    cargarSolicitudesAtendidas();
 });
 
 document.getElementById("botonCerrarSolicitudes").addEventListener("click", () => {
@@ -389,7 +458,7 @@ document.getElementById("botonAtenderSolicitud").addEventListener("click", () =>
         });
 });
 
-// Consulta al backend la cola actual y muestra las solicitudes pendientes en orden de llegada.
+// Consulta las solicitudes pendientes y prepara el paginado.
 function cargarSolicitudes() {
     fetch("http://localhost:8000/api/solicitudes", { cache: "no-store" })
         .then(respuesta => {
@@ -397,34 +466,86 @@ function cargarSolicitudes() {
             return respuesta.json();
         })
         .then(solicitudes => {
-            listaSolicitudes.innerHTML = "";
-            if (solicitudes.length === 0) {
-                listaSolicitudes.innerHTML = '<p class="historial-vacio">No hay solicitudes pendientes.</p>';
-                return;
-            }
-            solicitudes.forEach((solicitud, indice) => {
-                const elemento = document.createElement("article");
-                elemento.className = "item-historial";
-                const info = document.createElement("div");
-                const titulo = document.createElement("strong");
-                titulo.textContent = `${indice === 0 ? "Siguiente en atender · " : ""}Solicitud ${solicitud.id_solicitud}`;
-                const detalle = document.createElement("p");
-                detalle.textContent = `${solicitud.descripcion} · Prioridad: ${obtenerTextoPrioridad(solicitud.prioridad)}`;
-                info.append(titulo, detalle);
-                const estado = document.createElement("span");
-                estado.className = "estado pendiente";
-                estado.textContent = solicitud.estado || "Pendiente";
-                elemento.append(info, estado);
-                listaSolicitudes.appendChild(elemento);
-            });
+            solicitudesMostradas = solicitudes;
+            tipoSolicitudes = "pendientes";
+            paginaSolicitudesActual = 1;
+            mostrarPaginaSolicitudes();
         })
-        .catch(error => {
-            listaSolicitudes.innerHTML = "";
-            const mensaje = document.createElement("p");
-            mensaje.className = "historial-vacio";
-            mensaje.textContent = error.message;
-            listaSolicitudes.appendChild(mensaje);
-        });
+        .catch(error => mostrarErrorSolicitudes(error.message));
+}
+
+// Consulta las solicitudes atendidas y prepara el mismo paginado.
+function cargarSolicitudesAtendidas() {
+    fetch("http://localhost:8000/api/solicitudes/atendidas", { cache: "no-store" })
+        .then(respuesta => {
+            if (!respuesta.ok) throw new Error("No se pudieron cargar las solicitudes atendidas.");
+            return respuesta.json();
+        })
+        .then(solicitudes => {
+            solicitudesMostradas = solicitudes;
+            tipoSolicitudes = "atendidas";
+            paginaSolicitudesActual = 1;
+            mostrarPaginaSolicitudes();
+        })
+        .catch(error => mostrarErrorSolicitudes(error.message));
+}
+
+// Muestra solamente las seis solicitudes que corresponden a la página actual.
+function mostrarPaginaSolicitudes() {
+    listaSolicitudes.innerHTML = "";
+
+    if (solicitudesMostradas.length === 0) {
+        const texto = tipoSolicitudes === "atendidas"
+            ? "Todavía no hay solicitudes atendidas."
+            : "No hay solicitudes pendientes.";
+        listaSolicitudes.innerHTML = `<p class="historial-vacio">${texto}</p>`;
+        document.getElementById("paginadoSolicitudes").style.display = "none";
+        return;
+    }
+
+    const inicio = (paginaSolicitudesActual - 1) * solicitudesPorPagina;
+    const fin = inicio + solicitudesPorPagina;
+    const solicitudesPagina = solicitudesMostradas.slice(inicio, fin);
+
+    solicitudesPagina.forEach((solicitud, indice) => {
+        const elemento = document.createElement("article");
+        elemento.className = "item-historial";
+        const info = document.createElement("div");
+        const titulo = document.createElement("strong");
+
+        if (tipoSolicitudes === "pendientes") {
+            titulo.textContent = `${inicio + indice === 0 ? "Siguiente en atender · " : ""}Solicitud ${solicitud.id_solicitud}`;
+        } else {
+            titulo.textContent = `Solicitud ${solicitud.id_solicitud}`;
+        }
+
+        const detalle = document.createElement("p");
+        detalle.textContent = `${solicitud.descripcion} · Prioridad: ${obtenerTextoPrioridad(solicitud.prioridad)}`;
+        info.append(titulo, detalle);
+
+        const estado = document.createElement("span");
+        estado.className = tipoSolicitudes === "atendidas" ? "estado atendida" : "estado pendiente";
+        estado.textContent = solicitud.estado || (tipoSolicitudes === "atendidas" ? "Atendida" : "Pendiente");
+
+        elemento.append(info, estado);
+        listaSolicitudes.appendChild(elemento);
+    });
+
+    const totalPaginas = Math.ceil(solicitudesMostradas.length / solicitudesPorPagina);
+    const paginado = document.getElementById("paginadoSolicitudes");
+    paginado.style.display = totalPaginas > 1 ? "flex" : "none";
+    document.getElementById("numeroPagina").textContent = `Página ${paginaSolicitudesActual} de ${totalPaginas}`;
+    document.getElementById("paginaAnterior").disabled = paginaSolicitudesActual === 1;
+    document.getElementById("paginaSiguiente").disabled = paginaSolicitudesActual === totalPaginas;
+}
+
+function mostrarErrorSolicitudes(texto) {
+    listaSolicitudes.innerHTML = "";
+    const mensaje = document.createElement("p");
+    mensaje.className = "historial-vacio";
+    mensaje.textContent = texto;
+    listaSolicitudes.appendChild(mensaje);
+    document.getElementById("paginadoSolicitudes").style.display = "none";
 }
 
 // Pide al servidor las tareas ordenadas por el árbol de complejidad.
