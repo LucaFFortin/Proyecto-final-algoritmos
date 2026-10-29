@@ -79,20 +79,12 @@ def preorden(raiz):
         preorden(raiz.der)
 
 
-def inorden(raiz):
-    """Realiza el barrido inorden del árbol."""
-    if(raiz is not None):
-        inorden(raiz.izq)
-        print(raiz.info)
-        inorden(raiz.der)
-
-def inorden_villano_heroe(raiz):
-    """Realiza el barrido inorden de los heroes y villanos."""
-    if(raiz is not None):
-        inorden_villano_heroe(raiz.izq)
-        print(raiz.info, raiz.opcion)
-        inorden_villano_heroe(raiz.der)
-
+def inorden(raiz, lista):
+    """Recorre el árbol en inorden y guarda los datos en una lista."""
+    if raiz is not None:
+        inorden(raiz.izq, lista)
+        lista.append(raiz.info)
+        inorden(raiz.der, lista)
 
 
 def postorden(raiz):
@@ -116,32 +108,38 @@ def por_nivel(raiz):
             arribo(pendientes, nodo.der)
 
 
-def altura(raiz):
+# ==================== OPERACIONES PARA TASKFLOW ====================
+
+def insertar_tarea_arbol(raiz, tarea):
+    """Inserta una tarea en el árbol según su complejidad."""
     if raiz is None:
-        return -1
-    else:
-        altura_izq = altura(raiz.izq)
-        altura_der = altura(raiz.der)
-        return 1 + max(altura_izq, altura_der) # cuando el nodo existe 
-    
-# altura(3) = 1 + max(0, -1)
-#altura(3) = 1 + 0
-#altura(3) = 1
+        return nodoArbol(tarea)
 
-def altura_isquierda_derecha(raiz): # necesitas la altura de sus hijos para cuando ya algun hijo sea None corte la recursion
+    if tarea["complejidad"] < raiz.info["complejidad"]:
+        raiz.izq = insertar_tarea_arbol(raiz.izq, tarea)
+    else:
+        raiz.der = insertar_tarea_arbol(raiz.der, tarea)
+
+    return raiz
+
+
+def tarea_menos_compleja(raiz):
+    """Devuelve la tarea de menor complejidad."""
     if raiz is None:
-        print ("Ya esta vacio el arbol")
-    else:
-        altura_izq = altura(raiz.izq)
-        altura_der = altura(raiz.der)
-        print(f"Altura del subárbol izquierdo: {altura_izq}")
-        print(f"Altura del subárbol derecho: {altura_der}")
+        return None
 
-"""
-    5 --> raiz 
+    while raiz.izq is not None:
+        raiz = raiz.izq
 
-3     8                 como 3 da 1 y 8 da 0 no tiene hijos si suma 1 del return mas el 1 del 3 te da que tiene un total de altura de 2 
+    return raiz.info
 
-1 hijo de 3 este 3 no tiene hijo derecho None 3 tiene altura de 1 
-no tiene hijos altura = 0
-"""
+
+def tarea_mas_compleja(raiz):
+    """Devuelve la tarea de mayor complejidad."""
+    if raiz is None:
+        return None
+
+    while raiz.der is not None:
+        raiz = raiz.der
+
+    return raiz.info
