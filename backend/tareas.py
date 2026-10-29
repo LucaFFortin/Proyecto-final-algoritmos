@@ -8,7 +8,10 @@ from tad_lista import nodoLista, Lista, insertar, lista_vacia, eliminar, tamanio
 #  estado actual (Pendiente, En Progreso, Completada). 
 
 lista_tareas = Lista()
+pila_historial = Pila()
+cola_soporte = Cola()
 
+# ============================ FUNCIONES DE LISTA ENLAZADA =========================================
 
 # Agregado de tareas pendientes (TDA Lista Enlazada):
 
@@ -70,15 +73,12 @@ def eliminar_id(lista_tareas, id): # -------- eliminar tarea -------------
     while aux is not None and aux.info["id_tarea"] != id:
         aux = aux.sig
 
-    if aux is not None:
-        dato = aux.info
-        eliminar(lista_tareas, dato)
-        print("Tarea eliminada correctamente.")
-        return dato
 
-    print("No se encontró la tarea para eliminar con el ID proporcionado.")
-    return None 
+def eliminar_id(lista_tareas, id):
+    return eliminar_por_id_lista(lista_tareas, id)
 
+def obtener_todas_las_tareas(lista):
+    return obtener_datos(lista)
 
 
 
@@ -210,7 +210,6 @@ def atender_solicitud(cola_solicitudes):
     if cola_vacia(cola_solicitudes):
         print("No hay solicitudes para atender.")
         return None
-
     solicitud = atencion(cola_solicitudes)
     print("Solicitud atendida y removida de la cola.")
     return solicitud
@@ -263,26 +262,21 @@ def insertar_tarea_arbol(raiz, tarea):
     if raiz is None:
         return nodoArbol(tarea)
 
-    complejidad = tarea["complejidad"]
-    complejidad_raiz = raiz.info["complejidad"]
+def enviar_tarea_a_mesa_ayuda(lista_tareas, cola_soporte, id_tarea, id_solicitud):
+    tarea = buscar_por_id(lista_tareas, id_tarea)
+    if tarea is None:
+        return None
+    descripcion_ticket = f"Tarea {tarea['id_tarea']}: {tarea['descripcion']}"
 
-    if complejidad < complejidad_raiz:
-        raiz.izq = insertar_tarea_arbol(raiz.izq, tarea)
-    else:
-        raiz.der = insertar_tarea_arbol(raiz.der, tarea)
+    return agregar_solicitud(cola_soporte, id_solicitud, descripcion_ticket, tarea["prioridad"], "Pendiente")
 
-    return raiz
-
+# ======================================= OPERACIONES DE LISTAS ARBOLES =================================================
 
 def cargar_lista_en_arbol(lista_tareas):
     """Construye el árbol recorriendo la lista sin modificarla."""
     raiz = None
-    actual = lista_tareas.inicio
-
-    while actual is not None:
-        raiz = insertar_tarea_arbol(raiz, actual.info)
-        actual = actual.sig
-
+    for tarea in obtener_datos(lista_tareas):
+        raiz = insertar_tarea_arbol(raiz, tarea)
     return raiz
 
 def tarea_menos_compleja(raiz):
@@ -316,7 +310,6 @@ def obtener_complejidad():
     raiz = cargar_lista_en_arbol(lista_tareas)
     lista_ordenada = []
     obtener_tareas_arbol(raiz, lista_ordenada)
-
     return {
         "tareas": lista_ordenada,
         "menor": tarea_menos_compleja(raiz),

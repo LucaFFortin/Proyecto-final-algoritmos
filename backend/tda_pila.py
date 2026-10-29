@@ -15,6 +15,8 @@ def apilar(pila, dato):
     pila.tamanio += 1
 
 def desapilar(pila):
+    if pila_vacia(pila):
+        return None
     x = pila.cima.info
     pila.cima = pila.cima.sig
     pila.tamanio -= 1
@@ -42,3 +44,24 @@ def barrido(pila):
     while(not pila_vacia(paux)):
         dato = desapilar(paux)
         apilar(pila, dato)
+
+
+# ================== OPERACION USADA TASKFLOW =================================
+
+def obtener_datos(pila):
+    """Devuelve los datos desde la cima hasta la base sin vaciar la pila."""
+    auxiliar = Pila()
+    resultado = []
+
+    while not pila_vacia(pila):
+        dato = desapilar(pila)
+        resultado.append(dato)
+        apilar(auxiliar, dato)
+
+    while not pila_vacia(auxiliar):
+        apilar(pila, desapilar(auxiliar))
+
+    return resultado
+
+
+

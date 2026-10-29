@@ -91,6 +91,10 @@ function mostrarTareas() {
                 <button class="estado estado-clickeable ${obtenerClaseEstado(tarea.estado)}"
                         data-id="${tarea.id}" aria-label="Cambiar estado de la tarea"
                         title="Hacé clic para cambiar entre Pendiente y En Progreso">${obtenerTextoEstado(tarea.estado)}</button>
+                <button class="boton-ticket ${tarea.ayudaSolicitada ? "ticket-creado" : ""}"
+                        data-id="${tarea.id}" ${tarea.ayudaSolicitada ? "disabled" : ""}>
+                    ${tarea.ayudaSolicitada ? "Ayuda solicitada" : "Enviar a mesa de ayuda"}
+                </button>
                 <div>
                     <button class="boton-completar" data-id="${tarea.id}">Completar</button>
                     <button class="boton-eliminar" data-id="${tarea.id}">Eliminar</button>
@@ -158,7 +162,8 @@ function cargarTareasDesdeServidor() {
                 titulo: t.descripcion,
                 prioridad: t.prioridad || 2,
                 complejidad: t.complejidad || 1,
-                estado: t.estado || "Pendiente"
+                estado: t.estado || "Pendiente",
+                ayudaSolicitada: Boolean(t.ayuda_solicitada)
             }));
             tareasFiltradas = tareas;
             paginaActual = 1;
