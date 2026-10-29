@@ -69,6 +69,25 @@ def insertar(lista, dato):
     lista.tamanio += 1
 
 
+def insertar_por_prioridad(lista, dato):
+    """Inserta el dato pasado en la lista."""
+    nodo = nodoLista()
+    nodo.info = dato
+
+    if (lista.inicio is None) or (lista.inicio.info["prioridad"] >= dato["prioridad"]): # puse solamente para que compare por priodad ya que uso diccionarios no me deja
+        nodo.sig = lista.inicio
+        lista.inicio = nodo
+    else:
+        ant = lista.inicio
+        act = lista.inicio.sig
+
+        while (act is not None and act.info["prioridad"] <= dato["prioridad"]):
+            ant = ant.sig
+            act = act.sig
+
+        nodo.sig = act
+        ant.sig = nodo
+
 
 
 def lista_vacia(lista):
