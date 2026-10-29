@@ -27,13 +27,16 @@ def arribo(cola, dato):
     cola.tamanio += 1
 
 
-def atencion(cola):  # Ej : 5 / 10 (primero 5) despues 5.sig apunta al siguiente nodo / cola.finalo apunta al nodo con el 10  
+def atencion(cola):
+    """Retira y devuelve el primer elemento de la cola."""
+    if cola_vacia(cola):
+        return None
 
     aux = cola.frente.info
     cola.frente = cola.frente.sig
 
     if cola.frente is None:
-        cola.final = None   #Control para saber si la cola ya esta vacia sino apunta a nada en memoria
+        cola.final = None   
 
     cola.tamanio -= 1
     return aux
@@ -44,6 +47,9 @@ def cola_vacia(cola):
 
 
 def en_frente(cola):
+    """Devuelve el elemento del frente sin retirarlo."""
+    if cola_vacia(cola):
+        return None
     return cola.frente.info
 
 
@@ -57,3 +63,21 @@ def mover_al_final(cola):
     arribo(cola, dato)
 
     return dato
+
+# ================= OPERACION USADA TASKFLOW ========================
+def obtener_datos(cola):
+    """Devuelve los datos en orden FIFO sin vaciar la cola."""
+    auxiliar = Cola()
+    resultado = []
+
+    while not cola_vacia(cola):
+        dato = atencion(cola)
+        resultado.append(dato)
+        arribo(auxiliar, dato)
+
+    while not cola_vacia(auxiliar):
+        arribo(cola, atencion(auxiliar))
+
+    return resultado
+
+
